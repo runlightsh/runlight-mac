@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Settings, Sites: every site from every connection, grouped by install. Hiding, reordering, and
-/// pinning one to the menu bar join in milestone 8.
+/// Settings, Sites: every site from every connection, grouped by install, each with a switch to
+/// show it or not. Reordering and pinning one to the menu bar join in milestone 8.
 struct SitesSettingsView: View {
     @Environment(AppModel.self) private var model
 
@@ -33,14 +33,16 @@ struct SitesSettingsView: View {
                     ForEach(model.connections) { state in
                         Section {
                             ForEach(state.sites) { site in
-                                SiteSettingsRow(site: site)
+                                SiteSettingsRow(key: SiteKey(connection: state.id, site: site.id), site: site)
                             }
                         } header: {
                             HStack {
                                 Text(state.connection.name)
                                 Spacer()
-                                Text("\(state.sites.count) \(state.sites.count == 1 ? "site" : "sites")")
+                                Text(count(state))
                                     .foregroundStyle(.tertiary)
+                                    .contentTransition(.numericText())
+                                    .animation(Theme.Motion.number, value: count(state))
                             }
                         }
                     }
@@ -50,14 +52,27 @@ struct SitesSettingsView: View {
         }
         .frame(width: SettingsLayout.paneSize.width, height: SettingsLayout.paneSize.height)
     }
+
+    /// "14 sites", or "12 of 14 shown" once some are switched off.
+    private func count(_ state: ConnectionState) -> String {
+        let shown = state.sites.filter { model.isShown(SiteKey(connection: state.id, site: $0.id)) }.count
+        if shown == state.sites.count { return "\(shown) \(shown == 1 ? "site" : "sites")" }
+        return "\(shown) of \(state.sites.count) shown"
+    }
 }
 
 private struct SiteSettingsRow: View {
+    let key: SiteKey
     let site: Site
 
+    @Environment(AppModel.self) private var model
+
     var body: some View {
+        let shown = model.isShown(key)
         HStack(spacing: Theme.Space.m - 2) {
-            SiteMonogram(name: site.name, id: site.id, size: 24)
+            SiteIcon(key: key, site: site, size: 24)
+                .saturation(shown ? 1 : 0)
+                .opacity(shown ? 1 : 0.5)
             VStack(alignment: .leading, spacing: 1) {
                 Text(site.name)
                     .font(.system(size: 13))
@@ -65,14 +80,20 @@ private struct SiteSettingsRow: View {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
+            .opacity(shown ? 1 : 0.55)
             Spacer()
             Text(Self.cityName(site.timezone))
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .help(site.timezone)
+            Toggle("Show \(site.name)", isOn: Binding(get: { shown }, set: { model.setShown(key, $0) }))
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .labelsHidden()
+                .help(shown ? "Shown in the menu bar popover" : "Hidden from the menu bar popover")
         }
         .padding(.vertical, 1)
-        .accessibilityElement(children: .combine)
+        .animation(Theme.Motion.hover, value: shown)
     }
 
     /// "America/Toronto" reads as "Toronto".

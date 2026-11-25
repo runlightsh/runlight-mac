@@ -13,7 +13,7 @@ struct LiveTests {
     let expectedSites = Int(ProcessInfo.processInfo.environment["RUNLIGHT_LIVE_SITES"] ?? "")
 
     func model() -> AppModel {
-        AppModel(store: ConnectionStore(directory: FileManager.default.temporaryDirectory.appending(path: "runlight-live-\(UUID().uuidString)")), vault: MemoryVault())
+        AppModel(store: ConnectionStore(directory: FileManager.default.temporaryDirectory.appending(path: "runlight-live-\(UUID().uuidString)")), vault: MemoryVault(), defaults: UserDefaults(suiteName: UUID().uuidString)!)
     }
 
     @Test func connectsAndListsEverySite() async throws {

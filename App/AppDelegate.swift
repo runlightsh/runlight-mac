@@ -28,7 +28,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         let model = model
         popover = PopoverController { PopoverView(actions: actions).environment(model) }
-        Task { for state in model.connections { await model.test(state.id) } }
+        popover?.onShow = { model.popoverOpened() }
+        model.startPolling()
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.autosaveName = "Runlight"
@@ -41,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
         statusItem = item
+        followMenuBarNumber()
 
         #if DEBUG
         // For screenshots and UI checks: `-OpenPopover YES`, `-OpenSettings general` (with `-AddConnection YES` for the sheet), and
@@ -85,6 +87,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openSettingsFromMenu() { openSettings(nil) }
+
+    /// Keeps the number beside the icon in step with the model: today's visitors across every site,
+    /// in the menu bar's own font with figures that don't shift as they change. Nothing shows until
+    /// the first numbers arrive.
+    private func followMenuBarNumber() {
+        withObservationTracking {
+            updateMenuBarNumber(model.visitorsToday)
+        } onChange: { [weak self] in
+            DispatchQueue.main.async { self?.followMenuBarNumber() }
+        }
+    }
+
+    private func updateMenuBarNumber(_ visitors: Int?) {
+        guard let button = statusItem?.button else { return }
+        let text = visitors.map { " " + NumberText.compact($0) } ?? ""
+        guard button.title != text else { return }
+        button.attributedTitle = NSAttributedString(string: text, attributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .medium),
+            .baselineOffset: 0.5,
+        ])
+        button.setAccessibilityLabel(visitors.map { "Runlight, \($0) visitors today" } ?? "Runlight")
+    }
 
     func openSettings(_ tab: SettingsTab?) {
         popover?.hide()

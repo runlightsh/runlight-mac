@@ -114,7 +114,7 @@ struct Stats: Codable, Equatable, Sendable {
     static let zero = Stats(visitors: 0, visits: 0, pageviews: 0, viewsPerVisit: 0, bounceRate: 0, visitDuration: 0)
 }
 
-struct StatsResponse: Codable, Sendable {
+struct StatsResponse: Codable, Equatable, Sendable {
     let site: String
     let range: ReportRange
     var compare: CompareRange?
@@ -134,7 +134,7 @@ struct SeriesPoint: Codable, Equatable, Sendable {
 
 /// Points for each hour or day of the range. With a comparison, `previous` lines up with `points`
 /// by position: the same hour of the day before, for today.
-struct SeriesResponse: Codable, Sendable {
+struct SeriesResponse: Codable, Equatable, Sendable {
     let site: String
     let range: ReportRange
     var compare: CompareRange?
@@ -247,8 +247,9 @@ struct GoalNumbers: Codable, Equatable, Sendable {
     let rate: Double
 }
 
-/// A goal with its numbers for the period. The API sends them flat, in one object.
-struct GoalResult: Decodable, Equatable, Identifiable, Sendable {
+/// A goal with its numbers for the period. The API sends them flat, in one object, and the cache
+/// keeps them the same way.
+struct GoalResult: Codable, Equatable, Identifiable, Sendable {
     let goal: Goal
     let numbers: GoalNumbers
     var previous: GoalNumbers?
@@ -257,14 +258,27 @@ struct GoalResult: Decodable, Equatable, Identifiable, Sendable {
 
     private enum CodingKeys: String, CodingKey { case previous }
 
+    init(goal: Goal, numbers: GoalNumbers, previous: GoalNumbers? = nil) {
+        self.goal = goal
+        self.numbers = numbers
+        self.previous = previous
+    }
+
     init(from decoder: Decoder) throws {
         goal = try Goal(from: decoder)
         numbers = try GoalNumbers(from: decoder)
         previous = try decoder.container(keyedBy: CodingKeys.self).decodeIfPresent(GoalNumbers.self, forKey: .previous)
     }
+
+    func encode(to encoder: Encoder) throws {
+        try goal.encode(to: encoder)
+        try numbers.encode(to: encoder)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(previous, forKey: .previous)
+    }
 }
 
-struct GoalsResponse: Decodable, Sendable {
+struct GoalsResponse: Codable, Equatable, Sendable {
     let site: String
     var range: ReportRange?
     /// Everyone who visited in the period, the rate's denominator.

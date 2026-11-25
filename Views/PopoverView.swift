@@ -12,6 +12,7 @@ struct PopoverView: View {
     let actions: PopoverActions
 
     @Environment(AppModel.self) private var model
+    @State private var spin = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,24 +41,43 @@ struct PopoverView: View {
     }
 
     private var header: some View {
-        HStack(spacing: Theme.Space.s) {
+        @Bindable var model = model
+        return HStack(spacing: Theme.Space.s) {
             RunlightMark(size: 16)
             Text("Runlight")
                 .font(.system(size: 13, weight: .semibold))
             Spacer()
+            if !model.isEmpty {
+                PeriodPicker(selection: $model.period)
+                    .transition(.opacity)
+            }
         }
-        .padding(.horizontal, Theme.Space.l)
+        .padding(.leading, Theme.Space.l)
+        .padding(.trailing, Theme.Space.m)
         .frame(height: 40)
     }
 
     private var footer: some View {
         HStack(spacing: Theme.Space.xxs) {
-            Text(footerText)
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
-                .contentTransition(.opacity)
+            UpdatedLabel()
             Spacer()
+            if !model.isEmpty {
+                Button { model.refreshNow() } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .rotationEffect(.degrees(spin ? 360 : 0))
+                }
+                .help("Refresh")
+                .accessibilityLabel("Refresh")
+                .keyboardShortcut("r", modifiers: .command)
+                .disabled(model.isRefreshing)
+                .onChange(of: model.isRefreshing) { _, refreshing in
+                    if refreshing {
+                        withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) { spin = true }
+                    } else {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { spin = false }
+                    }
+                }
+            }
             Button { actions.openSettings(.general) } label: {
                 Image(systemName: "gearshape")
             }
@@ -76,12 +96,36 @@ struct PopoverView: View {
         .padding(.trailing, Theme.Space.s)
         .frame(height: 38)
     }
+}
 
-    private var footerText: String {
+/// "Updated just now", "Updated 4 min ago", or "Offline, updated 2:14 PM", kept current while open.
+private struct UpdatedLabel: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 15)) { context in
+            Text(text(at: context.date))
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
+                .contentTransition(.opacity)
+                .animation(Theme.Motion.hover, value: text(at: context.date))
+        }
+    }
+
+    private func text(at now: Date) -> String {
         if model.isEmpty { return "Not connected" }
-        let names = model.connections.map(\.connection.name).joined(separator: ", ")
-        let count = model.allSites.count
-        return "\(count) \(count == 1 ? "site" : "sites") on \(names)"
+        guard let updated = model.updatedAt else { return model.isRefreshing ? "Loading…" : "Waiting for numbers" }
+        let age = now.timeIntervalSince(updated)
+        let when: String
+        if age < 60 {
+            when = "just now"
+        } else if age < 3600 {
+            when = "\(Int(age / 60)) min ago"
+        } else {
+            when = updated.formatted(date: Calendar.current.isDateInToday(updated) ? .omitted : .abbreviated, time: .shortened)
+        }
+        return model.offline ? "Offline, updated \(when)" : "Updated \(when)"
     }
 }
 

@@ -61,7 +61,26 @@ struct ConnectionState: Identifiable, Equatable, Sendable {
     var id: UUID { connection.id }
 }
 
-/// Everything the views read. Connections and their sites live here; numbers join in milestone 4.
+/// One site of one connection: sites from two installs may share an id.
+struct SiteKey: Hashable, Codable, Sendable {
+    let connection: UUID
+    let site: String
+
+    /// "<connection>/<site>", for UserDefaults.
+    var storageKey: String { "\(connection.uuidString)/\(site)" }
+
+    init(connection: UUID, site: String) {
+        self.connection = connection
+        self.site = site
+    }
+
+    init?(storageKey: String) {
+        guard let slash = storageKey.firstIndex(of: "/"), let id = UUID(uuidString: String(storageKey[..<slash])) else { return nil }
+        self.init(connection: id, site: String(storageKey[storageKey.index(after: slash)...]))
+    }
+}
+
+/// Everything the views read: connections, their sites, and the numbers for each.
 @MainActor
 @Observable
 final class AppModel {
@@ -69,26 +88,71 @@ final class AppModel {
     /// Whether Settings shows the Add Connection sheet. The popover sets it before opening Settings.
     var addingConnection = false
 
-    private let store: ConnectionStore
-    private let vault: TokenVault
-    private let session: URLSession
-    private let now: @Sendable () -> Date
+    /// The period the popover shows, kept between launches.
+    var period: Period = .today {
+        didSet {
+            defaults.set(period.rawValue, forKey: "period")
+            poller?.reconcile()
+        }
+    }
+    /// The last good numbers for each period and site.
+    var snapshots: [Period: [SiteKey: SiteSnapshot]] = [:]
+    /// Why a site's last fetch failed, until one works.
+    var failures: [SiteKey: RunlightError] = [:]
+    /// Each site's icon, as fetched, and when it was last asked for (an empty Data means it has none).
+    var icons: [SiteKey: IconEntry] = [:]
+    /// Sites switched off in Settings: left out of the list, the totals, the menu bar, and polling.
+    var hiddenSites: Set<SiteKey> = [] {
+        didSet {
+            defaults.set(hiddenSites.map(\.storageKey).sorted(), forKey: "hiddenSites")
+            poller?.reconcile()
+        }
+    }
+    /// How many fetches are under way, for the refresh button.
+    var inFlight = 0
+    /// True while the network is down; numbers stay, greyed.
+    var offline = false
 
-    init(store: ConnectionStore = .standard, vault: TokenVault = Keychain(), session: URLSession = .shared, now: @escaping @Sendable () -> Date = Date.init) {
+    @ObservationIgnored var poller: Poller?
+    @ObservationIgnored var saveTasks: [String: Task<Void, Never>] = [:]
+
+    let store: ConnectionStore
+    /// Where choices like the period and hidden sites are kept; tests pass their own.
+    let defaults: UserDefaults
+    private let vault: TokenVault
+    let session: URLSession
+    let now: @Sendable () -> Date
+
+    init(store: ConnectionStore = .standard, vault: TokenVault = Keychain(), session: URLSession = .shared, defaults: UserDefaults = .standard, now: @escaping @Sendable () -> Date = Date.init) {
         self.store = store
+        self.defaults = defaults
+        period = Period(rawValue: defaults.string(forKey: "period") ?? "") ?? .today
+        hiddenSites = Set((defaults.stringArray(forKey: "hiddenSites") ?? []).compactMap(SiteKey.init(storageKey:)))
         self.vault = vault
         self.session = session
         self.now = now
         connections = store.loadConnections().map { connection in
             ConnectionState(connection: connection, sites: store.cached([Site].self, Self.sitesKey(connection.id)) ?? [], status: .ok)
         }
+        loadCache()
     }
 
     var isEmpty: Bool { connections.isEmpty }
 
-    /// Every site across every connection, in connection order.
+    /// Every site across every connection, in connection order, switched off or not.
     var allSites: [(connection: ConnectionState, site: Site)] {
         connections.flatMap { state in state.sites.map { (state, $0) } }
+    }
+
+    /// The sites that are switched on.
+    var shownSites: [(connection: ConnectionState, site: Site)] {
+        allSites.filter { !hiddenSites.contains(SiteKey(connection: $0.connection.id, site: $0.site.id)) }
+    }
+
+    func isShown(_ key: SiteKey) -> Bool { !hiddenSites.contains(key) }
+
+    func setShown(_ key: SiteKey, _ shown: Bool) {
+        if shown { hiddenSites.remove(key) } else { hiddenSites.insert(key) }
     }
 
     func client(for id: UUID) -> RunlightClient? {
@@ -115,6 +179,7 @@ final class AppModel {
         connections.append(state)
         persist()
         store.cache(verified.sites, Self.sitesKey(connection.id))
+        poller?.reconcile()
         return state
     }
 
@@ -135,6 +200,7 @@ final class AppModel {
         connections[index].lastChecked = now()
         persist()
         store.cache(verified.sites, Self.sitesKey(id))
+        poller?.reconcile()
     }
 
     /// Asks the install again: is it there, does the token still work, which sites does it see.
@@ -161,6 +227,7 @@ final class AppModel {
             state.lastChecked = now()
         }
         persist()
+        poller?.reconcile()
     }
 
     /// Refreshes the site list only, for the six-hourly poll and after a 404 `unknown_site`.
@@ -173,6 +240,7 @@ final class AppModel {
                 state.status = .ok
             }
             store.cache(sites, Self.sitesKey(id))
+            poller?.reconcile()
         } catch {
             update(id) { $0.status = Self.status(for: error) }
         }
@@ -187,7 +255,12 @@ final class AppModel {
         }
         store.removeCache(for: id)
         connections.removeAll { $0.id == id }
+        for period in Period.allCases { snapshots[period] = snapshots[period]?.filter { $0.key.connection != id } }
+        failures = failures.filter { $0.key.connection != id }
+        icons = icons.filter { $0.key.connection != id }
+        hiddenSites = hiddenSites.filter { $0.connection != id }
         persist()
+        poller?.reconcile()
     }
 
     // MARK: Checking
@@ -244,7 +317,7 @@ final class AppModel {
 
     // MARK: Helpers
 
-    private func update(_ id: UUID, _ change: (inout ConnectionState) -> Void) {
+    func update(_ id: UUID, _ change: (inout ConnectionState) -> Void) {
         guard let index = connections.firstIndex(where: { $0.id == id }) else { return }
         change(&connections[index])
     }

@@ -16,8 +16,11 @@ struct Harness {
         server.on("GET", "/api/sites", fixture: "sites")
     }
 
+    /// Settings for this test alone, never the app's own.
+    let defaults = UserDefaults(suiteName: "sh.runlight.mac.tests.\(UUID().uuidString)")!
+
     func model() -> AppModel {
-        AppModel(store: store, vault: vault, session: server.session, now: { Date(timeIntervalSince1970: 1_795_638_600) })
+        AppModel(store: store, vault: vault, session: server.session, defaults: defaults, now: { Date(timeIntervalSince1970: 1_795_638_600) })
     }
 
     func files() -> [URL] {
@@ -86,7 +89,7 @@ struct ConnectTests {
     }
 
     @Test func unreachableAddressSaysSo() async throws {
-        let model = AppModel(store: ConnectionStore(directory: FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)), vault: MemoryVault(), session: OfflineProtocol.session)
+        let model = AppModel(store: ConnectionStore(directory: FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)), vault: MemoryVault(), session: OfflineProtocol.session, defaults: UserDefaults(suiteName: UUID().uuidString)!)
         do {
             try await model.connect(address: "https://example.com", token: "rl_good")
             Issue.record("Expected to fail")
