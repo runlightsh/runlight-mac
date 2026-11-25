@@ -18,7 +18,7 @@ struct VisualEffect: NSViewRepresentable {
     }
 }
 
-/// Gives the popover its shape: the material, rounded corners, and a hairline edge that is a touch
+/// Gives the popover its shape: the brand surface over a soft blur, rounded corners, and a hairline edge that is a touch
 /// brighter along the top, like light catching a lip of glass.
 struct PanelChrome: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
@@ -26,7 +26,12 @@ struct PanelChrome: ViewModifier {
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
         content
-            .background(VisualEffect(material: .popover))
+            .background {
+                ZStack {
+                    VisualEffect(material: .popover)
+                    Theme.panel.opacity(Theme.panelOpacity)
+                }
+            }
             .clipShape(shape)
             .overlay {
                 shape.strokeBorder(

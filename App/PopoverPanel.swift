@@ -154,6 +154,11 @@ final class PopoverController: NSObject {
     }
 
     private func startMonitoring() {
+        #if DEBUG
+        // `-KeepPopoverOpen YES` stops clicks elsewhere closing it, for screenshots taken while
+        // someone is using the Mac.
+        if UserDefaults.standard.bool(forKey: "KeepPopoverOpen") { return }
+        #endif
         outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
             MainActor.assumeIsolated { self?.hide() }
         }

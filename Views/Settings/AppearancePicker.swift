@@ -84,7 +84,7 @@ private struct MiniPopover: View {
     let dark: Bool
 
     var body: some View {
-        let paper = dark ? Color(white: 0.11) : Color(white: 0.96)
+        let paper = Color(nsColor: NSColor(rgb: dark ? 0x111113 : 0xFFFFFF))
         let ink = dark ? Color.white : Color.black
         let lamp = dark ? Color(nsColor: NSColor(rgb: 0x4ADE80)) : Color(nsColor: NSColor(rgb: 0x16A34A))
         ZStack(alignment: .topLeading) {

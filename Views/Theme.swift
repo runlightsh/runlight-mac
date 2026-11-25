@@ -14,6 +14,10 @@ enum Theme {
     static let down = Color(light: 0xB91C1C, dark: 0xF87171)
     /// The first chart series, for sparklines.
     static let series = Color(light: 0x2A78D6, dark: 0x3987E5)
+    /// The popover's surface, laid over the system blur: the dashboard's sheet colours, so dark mode
+    /// is a deep near black rather than whatever grey the blur makes of the windows behind.
+    static let panel = Color(light: 0xFFFFFF, dark: 0x111113)
+    static let panelOpacity: Double = 0.9
     /// Hairlines between rows and around the panel.
     static let hairline = Color(light: 0x000000, dark: 0xFFFFFF).opacity(0.08)
 
