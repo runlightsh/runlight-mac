@@ -25,7 +25,8 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     }
 }
 
-/// The Settings window: a standard toolbar of tabs that resizes smoothly to each pane.
+/// The Settings window: a standard toolbar of tabs over panes that all share one size, so
+/// switching tabs swaps the content instantly and the window never moves or resizes.
 ///
 /// While it is open the app shows in the Dock and the app switcher, so Command-Tab can find it
 /// again; when it closes, Runlight goes back to living only in the menu bar.
@@ -35,11 +36,12 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     init() {
         tabs.tabStyle = .toolbar
-        tabs.transitionOptions = [.crossfade, .allowUserInteraction]
+        tabs.transitionOptions = [.allowUserInteraction]
         tabs.canPropagateSelectedChildViewControllerTitle = true
         for tab in SettingsTab.allCases {
             let controller = NSHostingController(rootView: Self.view(for: tab))
-            controller.sizingOptions = .preferredContentSize
+            controller.sizingOptions = []
+            controller.preferredContentSize = SettingsLayout.paneSize
             controller.title = tab.title
             let item = NSTabViewItem(viewController: controller)
             item.label = tab.title

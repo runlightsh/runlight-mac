@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// Every pane shares one width, so switching tabs only ever changes the window's height.
-private let paneWidth: CGFloat = 520
+/// Every pane is the same size, so switching tabs never resizes the window. Longer panes scroll.
+enum SettingsLayout {
+    static let paneSize = CGSize(width: 520, height: 440)
+}
 
 struct GeneralSettingsView: View {
     @State private var launchAtLogin = LaunchAtLogin()
@@ -41,8 +43,7 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .animation(Theme.Motion.push, value: launchAtLogin.state)
-        .frame(width: paneWidth)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(width: SettingsLayout.paneSize.width, height: SettingsLayout.paneSize.height, alignment: .top)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             launchAtLogin.refresh()
         }
@@ -87,8 +88,8 @@ private struct PlaceholderPane: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 320)
         }
-        .padding(.vertical, 56)
-        .frame(width: paneWidth)
+        .padding(.bottom, Theme.Space.xxl)
+        .frame(width: SettingsLayout.paneSize.width, height: SettingsLayout.paneSize.height)
     }
 }
 
