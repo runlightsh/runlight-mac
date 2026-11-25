@@ -85,28 +85,33 @@ struct ToolbarButtonStyle: ButtonStyle {
     }
 }
 
-/// The popover's main call to action: filled with the lamp colour, with a gentle lift on hover.
+/// The main call to action: filled with the lamp colour, with a gentle lift on hover. `compact`
+/// matches a standard push button's height, for sheets.
 struct LampButtonStyle: ButtonStyle {
+    var compact = false
+
     func makeBody(configuration: Configuration) -> some View {
-        LampButton(configuration: configuration)
+        LampButton(configuration: configuration, compact: compact)
     }
 
     private struct LampButton: View {
         let configuration: Configuration
+        let compact: Bool
         @State private var hovering = false
         @Environment(\.colorScheme) private var colorScheme
+        @Environment(\.isEnabled) private var isEnabled
 
         var body: some View {
             configuration.label
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: compact ? 12 : 13, weight: .semibold))
                 .foregroundStyle(colorScheme == .dark ? Color.black : Color.white)
-                .padding(.horizontal, Theme.Space.l)
-                .padding(.vertical, 7)
+                .padding(.horizontal, compact ? 12 : Theme.Space.l)
+                .padding(.vertical, compact ? 4 : 7)
                 .background {
                     Capsule(style: .continuous)
                         .fill(Theme.lamp)
-                        .brightness(configuration.isPressed ? -0.08 : hovering ? 0.04 : 0)
-                        .shadow(color: Theme.lamp.opacity(hovering ? 0.45 : 0.2), radius: hovering ? 8 : 4, y: 1)
+                        .brightness(configuration.isPressed ? -0.08 : hovering && isEnabled ? 0.04 : 0)
+                        .shadow(color: Theme.lamp.opacity(hovering && isEnabled ? 0.45 : 0.2), radius: hovering && isEnabled ? 8 : 4, y: 1)
                 }
                 .scaleEffect(configuration.isPressed ? 0.97 : 1)
                 .onHover { inside in
@@ -114,6 +119,24 @@ struct LampButtonStyle: ButtonStyle {
                 }
                 .animation(Theme.Motion.hover, value: configuration.isPressed)
         }
+    }
+}
+
+/// A small spinning arc in the current foreground colour, for buttons that are working.
+struct Spinner: View {
+    var size: CGFloat = 11
+    @State private var spinning = false
+
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: 0.7)
+            .stroke(.foreground, style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+            .frame(width: size, height: size)
+            .rotationEffect(.degrees(spinning ? 360 : 0))
+            .onAppear {
+                withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) { spinning = true }
+            }
+            .accessibilityLabel("Working")
     }
 }
 

@@ -50,12 +50,6 @@ struct GeneralSettingsView: View {
     }
 }
 
-struct ConnectionsSettingsView: View {
-    var body: some View {
-        PlaceholderPane(symbol: "point.3.connected.trianglepath.dotted", title: "No connections yet", detail: "Connect a Runlight install with its address and a read-only token.")
-    }
-}
-
 struct SitesSettingsView: View {
     var body: some View {
         PlaceholderPane(symbol: "square.stack.3d.up", title: "No sites yet", detail: "Your sites appear here once a connection is added, ready to hide, reorder, or pin to the menu bar.")

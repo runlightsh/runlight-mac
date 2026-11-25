@@ -5,7 +5,8 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: PopoverController?
-    private lazy var settings = SettingsWindowController()
+    private let model = AppModel()
+    private lazy var settings = SettingsWindowController(model: model)
 
     /// Unit tests load the app as their host; they get no menu bar item.
     private var isRunningTests: Bool {
@@ -21,7 +22,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             openSettings: { [weak self] tab in self?.openSettings(tab) },
             quit: { NSApp.terminate(nil) }
         )
-        popover = PopoverController { PopoverView(actions: actions) }
+        let model = model
+        popover = PopoverController { PopoverView(actions: actions).environment(model) }
+        Task { for state in model.connections { await model.test(state.id) } }
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.autosaveName = "Runlight"

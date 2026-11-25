@@ -18,6 +18,20 @@ enum PanelPlacement {
         let height = min(size.height, top - visible.minY - margin)
         return CGRect(x: x.rounded(), y: (top - height).rounded(), width: size.width, height: height.rounded())
     }
+
+    /// Picks the screen the item is on. When the menu bar is too full to show the item, or another
+    /// app hides it, macOS parks it in a screen's bottom corner, below the bar; then there is nothing to
+    /// hang from, and the panel opens at the top right of the main screen instead.
+    static func frame(size: CGSize, anchor: CGRect?, screens: [(frame: CGRect, visible: CGRect)], main: CGRect?) -> CGRect {
+        if let anchor, anchor.width > 0,
+           let screen = screens.first(where: { $0.frame.contains(CGPoint(x: anchor.midX, y: anchor.midY)) }),
+           anchor.minY >= screen.visible.maxY - 2 {
+            return frame(size: size, anchor: anchor, visible: screen.visible)
+        }
+        let visible = main ?? screens.first?.visible ?? CGRect(origin: .zero, size: size)
+        let corner = CGRect(x: visible.maxX - margin - size.width / 2 - 1, y: visible.maxY + gap, width: 2, height: 0)
+        return frame(size: size, anchor: corner, visible: visible)
+    }
 }
 
 /// A borderless panel that floats under the menu bar like the system's own menu bar extras. It can
@@ -133,16 +147,8 @@ final class PopoverController: NSObject {
     }
 
     private func frame(for size: CGSize) -> CGRect {
-        // When the menu bar is too full to show the item (or another app hides it), there is
-        // nothing to hang from, so the panel opens at the top right of the main screen instead.
-        guard let button = anchorButton, let window = button.window, let screen = window.screen, window.frame.width > 0 else {
-            let screen = NSScreen.main ?? NSScreen.screens[0]
-            let visible = screen.visibleFrame
-            let corner = CGRect(x: visible.maxX - PanelPlacement.margin - size.width / 2 - 1, y: visible.maxY + PanelPlacement.gap, width: 2, height: 0)
-            return PanelPlacement.frame(size: size, anchor: corner, visible: visible)
-        }
-        let anchor = window.convertToScreen(button.convert(button.bounds, to: nil))
-        return PanelPlacement.frame(size: size, anchor: anchor, visible: screen.visibleFrame)
+        let anchor = anchorButton.flatMap { button in button.window.map { $0.convertToScreen(button.convert(button.bounds, to: nil)) } }
+        return PanelPlacement.frame(size: size, anchor: anchor, screens: NSScreen.screens.map { ($0.frame, $0.visibleFrame) }, main: NSScreen.main?.visibleFrame)
     }
 
     private func contentSizeChanged(_ size: CGSize) {

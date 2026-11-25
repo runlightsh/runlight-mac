@@ -58,6 +58,26 @@ struct PanelPlacementTests {
     }
 }
 
+extension PanelPlacementTests {
+    @Test func aHiddenItemOpensAtTheTopRight() {
+        // What macOS reports for an item the menu bar has no room for.
+        let hidden = CGRect(x: 0, y: 0, width: 30, height: 22)
+        let screens = [(frame: CGRect(x: 0, y: 0, width: 1512, height: 982), visible: screen)]
+        let frame = PanelPlacement.frame(size: size, anchor: hidden, screens: screens, main: screen)
+        #expect(frame.size == size)
+        #expect(frame.maxX == screen.maxX - PanelPlacement.margin)
+        #expect(frame.maxY == screen.maxY)
+    }
+
+    @Test func aVisibleItemUsesItsOwnScreen() {
+        let left = (frame: CGRect(x: -1920, y: 0, width: 1920, height: 1080), visible: CGRect(x: -1920, y: 0, width: 1920, height: 1055))
+        let right = (frame: CGRect(x: 0, y: 0, width: 1512, height: 982), visible: screen)
+        let anchor = CGRect(x: -900, y: 1055, width: 30, height: 24)
+        let frame = PanelPlacement.frame(size: size, anchor: anchor, screens: [right, left], main: screen)
+        #expect(left.visible.contains(frame))
+    }
+}
+
 struct MarkGeometryTests {
     @Test func fitsTheMarkIntoAnyRect() {
         let rect = CGRect(x: 10, y: 20, width: 64, height: 64)
