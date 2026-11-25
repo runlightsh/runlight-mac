@@ -3,16 +3,15 @@ import SwiftUI
 /// What the popover can ask the app to do.
 struct PopoverActions {
     var openSettings: (SettingsTab) -> Void = { _ in }
+    var addConnection: () -> Void = {}
     var quit: () -> Void = {}
 }
 
-/// Everything that lives under the menu bar item: the connect form until there is a connection,
-/// a brief "Connected" moment, then the sites.
+/// Everything that lives under the menu bar item: a welcome until there is a connection, then the sites.
 struct PopoverView: View {
     let actions: PopoverActions
 
     @Environment(AppModel.self) private var model
-    @State private var justConnected: ConnectionState?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,19 +23,12 @@ struct PopoverView: View {
             footer
         }
         .animation(Theme.Motion.push, value: model.isEmpty)
-        .animation(Theme.Motion.push, value: justConnected?.id)
         .panelChrome()
     }
 
     @ViewBuilder private var content: some View {
-        if let justConnected {
-            ConnectedMoment(state: justConnected)
-                .task {
-                    try? await Task.sleep(for: .seconds(1.3))
-                    self.justConnected = nil
-                }
-        } else if model.isEmpty {
-            OnboardingView { state in justConnected = state }
+        if model.isEmpty {
+            WelcomeView(addConnection: actions.addConnection)
         } else {
             VStack(spacing: 0) {
                 ForEach(model.connections.filter { !$0.status.isOK && $0.status != .checking }) { state in
@@ -93,70 +85,30 @@ struct PopoverView: View {
     }
 }
 
-/// First launch: the lamp glows softly beside a short welcome and the connect form.
-private struct OnboardingView: View {
-    let onConnected: (ConnectionState) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.l) {
-            HStack(spacing: Theme.Space.m) {
-                RunlightMark(size: 34, glowing: true)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Connect your Runlight")
-                        .font(.system(size: 14, weight: .semibold))
-                    Text("Today's numbers for every site, one click away.")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                }
-            }
-            ConnectForm(style: .popover, onConnected: onConnected)
-        }
-        .padding(Theme.Space.l)
-        .padding(.vertical, Theme.Space.xs)
-    }
-}
-
-/// A beat of confirmation: the lamp brightens, a check draws in, and the count of sites found.
-private struct ConnectedMoment: View {
-    let state: ConnectionState
-    @State private var drawn = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+/// First launch: the lamp glows softly, waiting, above one button that opens Settings to connect.
+private struct WelcomeView: View {
+    let addConnection: () -> Void
 
     var body: some View {
         VStack(spacing: Theme.Space.m) {
-            ZStack {
-                Circle()
-                    .fill(Theme.lamp.opacity(0.14))
-                    .frame(width: 56, height: 56)
-                    .scaleEffect(drawn ? 1 : 0.6)
-                Circle()
-                    .fill(Theme.lamp.opacity(0.08))
-                    .frame(width: 80, height: 80)
-                    .scaleEffect(drawn ? 1 : 0.4)
-                    .opacity(drawn ? 1 : 0)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.lamp)
-                    .scaleEffect(drawn ? 1 : 0.3)
-                    .opacity(drawn ? 1 : 0)
-            }
-            .frame(height: 80)
-            VStack(spacing: 3) {
-                Text("Connected")
+            RunlightMark(size: 44, glowing: true)
+                .padding(.bottom, Theme.Space.xs)
+            VStack(spacing: Theme.Space.xs) {
+                Text("Connect your Runlight")
                     .font(.system(size: 15, weight: .semibold))
-                Text("\(state.sites.count) \(state.sites.count == 1 ? "site" : "sites") on \(state.connection.name)")
+                Text("Add an install's address and a read-only token to see today's numbers for every site, right here.")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .opacity(drawn ? 1 : 0)
-            .offset(y: drawn ? 0 : 4)
+            Button("Add Runlight Connection…", action: addConnection)
+                .buttonStyle(LampButtonStyle())
+                .padding(.top, Theme.Space.xs)
         }
-        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Theme.Space.xxl)
         .padding(.vertical, Theme.Space.xxl)
-        .onAppear {
-            withAnimation(reduceMotion ? .none : .spring(response: 0.45, dampingFraction: 0.62)) { drawn = true }
-        }
-        .accessibilityElement(children: .combine)
+        .frame(maxWidth: .infinity)
     }
 }
 

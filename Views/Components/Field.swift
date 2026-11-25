@@ -52,14 +52,14 @@ struct RunlightField: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.8)))
                 }
             }
-            .padding(.horizontal, 10)
-            .frame(height: 30)
+            .padding(.horizontal, 12)
+            .frame(height: 36)
             .background {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(.primary.opacity(hovering || focused.wrappedValue ? 0.06 : 0.045))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: focused.wrappedValue || error != nil ? 1.5 : 0.5)
             }
             .shadow(color: ringColor, radius: 3)

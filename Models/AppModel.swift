@@ -66,6 +66,8 @@ struct ConnectionState: Identifiable, Equatable, Sendable {
 @Observable
 final class AppModel {
     private(set) var connections: [ConnectionState] = []
+    /// Whether Settings shows the Add Connection sheet. The popover sets it before opening Settings.
+    var addingConnection = false
 
     private let store: ConnectionStore
     private let vault: TokenVault

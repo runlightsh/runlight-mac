@@ -20,6 +20,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let actions = PopoverActions(
             openSettings: { [weak self] tab in self?.openSettings(tab) },
+            addConnection: { [weak self] in
+                self?.model.addingConnection = true
+                self?.openSettings(.connections)
+            },
             quit: { NSApp.terminate(nil) }
         )
         let model = model
@@ -39,12 +43,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
 
         #if DEBUG
-        // For screenshots and UI checks: `-OpenPopover YES`, `-OpenSettings general`, and
+        // For screenshots and UI checks: `-OpenPopover YES`, `-OpenSettings general` (with `-AddConnection YES` for the sheet), and
         // `-appearance dark` (read by AppAppearance, so it is not debug only).
         let defaults = UserDefaults.standard
         if defaults.bool(forKey: "OpenPopover"), let button = item.button {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.popover?.show(from: button) }
         }
+        if defaults.bool(forKey: "AddConnection") { model.addingConnection = true }
         if let tab = defaults.string(forKey: "OpenSettings").flatMap(SettingsTab.init(rawValue:)) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.openSettings(tab) }
         }

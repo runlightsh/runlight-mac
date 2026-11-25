@@ -50,12 +50,6 @@ struct GeneralSettingsView: View {
     }
 }
 
-struct SitesSettingsView: View {
-    var body: some View {
-        PlaceholderPane(symbol: "square.stack.3d.up", title: "No sites yet", detail: "Your sites appear here once a connection is added, ready to hide, reorder, or pin to the menu bar.")
-    }
-}
-
 struct AlertsSettingsView: View {
     var body: some View {
         PlaceholderPane(symbol: "bell.badge", title: "Spike alerts", detail: "Get a notification when a site's traffic jumps, naming the source that sent it.")

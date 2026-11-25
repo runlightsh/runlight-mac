@@ -3,7 +3,6 @@ import SwiftUI
 /// Settings, Connections: every install, how it's doing, and the ways to fix or remove it.
 struct ConnectionsSettingsView: View {
     @Environment(AppModel.self) private var model
-    @State private var adding = false
     @State private var replacing: ConnectionState?
     @State private var removing: ConnectionState?
 
@@ -22,7 +21,7 @@ struct ConnectionsSettingsView: View {
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 320)
-                    Button("Add Connection…") { adding = true }
+                    Button("Add Connection…") { model.addingConnection = true }
                         .buttonStyle(LampButtonStyle(compact: true))
                         .padding(.top, Theme.Space.s)
                 }
@@ -35,22 +34,21 @@ struct ConnectionsSettingsView: View {
                             ConnectionRow(state: state, replace: { replacing = state }, remove: { removing = state })
                         }
                     }
-                    Section {
-                        HStack {
-                            Spacer()
-                            Button("Add Connection…") { adding = true }
-                        }
-                    }
-                    .listRowBackground(Color.clear)
                 }
                 .formStyle(.grouped)
+                .safeAreaInset(edge: .bottom) {
+                    HStack {
+                        Spacer()
+                        Button("Add Connection…") { model.addingConnection = true }
+                    }
+                    .padding(.horizontal, Theme.Space.xl)
+                    .padding(.bottom, Theme.Space.l)
+                }
             }
         }
         .frame(width: SettingsLayout.paneSize.width, height: SettingsLayout.paneSize.height)
-        .sheet(isPresented: $adding) {
-            SheetFrame(title: "Add a Connection", detail: "Enter a Runlight install's address and a read-only token from its Settings, MCP & API.") {
-                ConnectForm(style: .sheet, onConnected: { _ in adding = false }, onCancel: { adding = false })
-            }
+        .sheet(isPresented: Binding(get: { model.addingConnection }, set: { model.addingConnection = $0 })) {
+            AddConnectionSheet(done: { model.addingConnection = false })
         }
         .sheet(item: $replacing) { state in
             SheetFrame(title: "Replace Token", detail: "Paste a new read-only token for \(state.connection.name). The current one stays until the new one works.") {
@@ -226,6 +224,30 @@ private struct ReplaceTokenForm: View {
             }
             working = false
         }
+    }
+}
+
+/// The Add Connection sheet: the form, then a beat of confirmation before it closes.
+private struct AddConnectionSheet: View {
+    let done: () -> Void
+    @State private var connected: ConnectionState?
+
+    var body: some View {
+        Group {
+            if let connected {
+                ConnectedMoment(state: connected)
+                    .frame(width: 420)
+                    .task {
+                        try? await Task.sleep(for: .seconds(1.4))
+                        done()
+                    }
+            } else {
+                SheetFrame(title: "Add a Runlight Connection", detail: "Enter an install's address and a read-only token from its Settings, MCP & API.") {
+                    ConnectForm(onConnected: { state in withAnimation(Theme.Motion.push) { connected = state } }, onCancel: done)
+                }
+            }
+        }
+        .transition(.opacity)
     }
 }
 

@@ -1,11 +1,8 @@
 import SwiftUI
 
-/// The address and token form, in the popover on first launch and in a sheet in Settings.
+/// The address and token form, in the Add Connection sheet in Settings.
 /// Return moves from the address to the token and then connects.
 struct ConnectForm: View {
-    enum Style { case popover, sheet }
-
-    var style: Style = .popover
     var onConnected: (ConnectionState) -> Void = { _ in }
     var onCancel: (() -> Void)?
 
@@ -44,15 +41,13 @@ struct ConnectForm: View {
             )
 
             HStack(spacing: Theme.Space.s) {
-                if style == .popover {
-                    Button {
-                        openURL(Self.tokenHelp)
-                    } label: {
-                        Label("Making a read-only token", systemImage: "arrow.up.right")
-                            .labelStyle(TrailingIconLabelStyle())
-                    }
-                    .buttonStyle(LinkButtonStyle())
+                Button {
+                    openURL(Self.tokenHelp)
+                } label: {
+                    Label("Making a read-only token", systemImage: "arrow.up.right")
+                        .labelStyle(TrailingIconLabelStyle())
                 }
+                .buttonStyle(LinkButtonStyle())
                 Spacer()
                 if let onCancel {
                     Button("Cancel", action: onCancel)
@@ -70,7 +65,7 @@ struct ConnectForm: View {
                     }
                     .frame(minWidth: 84)
                 }
-                .buttonStyle(LampButtonStyle(compact: style == .sheet))
+                .buttonStyle(LampButtonStyle(compact: true))
                 .keyboardShortcut(.defaultAction)
                 .disabled(step != nil)
             }
