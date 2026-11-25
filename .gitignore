@@ -1,0 +1,14 @@
+# Planning docs stay out of the repo
+*PRD*.md
+
+# Generated
+*.xcodeproj
+build/
+DerivedData/
+.DS_Store
+*.xcuserstate
+xcuserdata/
+
+# Secrets and captured responses with tokens
+*.env
+.fixtures-raw/

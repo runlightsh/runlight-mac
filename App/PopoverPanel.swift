@@ -1,0 +1,177 @@
+import AppKit
+import SwiftUI
+
+/// Where the popover goes: centred under the menu bar item, a few points below the bar, and kept
+/// fully on screen with a margin. Pure, so it is tested without a window.
+enum PanelPlacement {
+    static let gap: CGFloat = 5
+    static let margin: CGFloat = 8
+
+    /// - Parameters:
+    ///   - size: the panel's size.
+    ///   - anchor: the menu bar item's frame in screen coordinates.
+    ///   - visible: the screen's visible frame (below the menu bar, beside the Dock).
+    static func frame(size: CGSize, anchor: CGRect, visible: CGRect) -> CGRect {
+        var x = anchor.midX - size.width / 2
+        x = min(max(x, visible.minX + margin), visible.maxX - margin - size.width)
+        let top = min(anchor.minY - gap, visible.maxY)
+        let height = min(size.height, top - visible.minY - margin)
+        return CGRect(x: x.rounded(), y: (top - height).rounded(), width: size.width, height: height.rounded())
+    }
+}
+
+/// A borderless panel that floats under the menu bar like the system's own menu bar extras. It can
+/// take key focus (for the connect form's text fields) without activating the app, so whatever
+/// you were working in stays frontmost.
+final class PopoverPanel: NSPanel {
+    init() {
+        super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView], backing: .buffered, defer: true)
+        isFloatingPanel = true
+        level = .statusBar
+        backgroundColor = .clear
+        isOpaque = false
+        hasShadow = true
+        isMovable = false
+        hidesOnDeactivate = false
+        isReleasedWhenClosed = false
+        animationBehavior = .none
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient, .ignoresCycle]
+    }
+
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+
+    /// An agent app has no visible Edit menu, so the standard editing shortcuts are routed here.
+    /// Without this, pasting a token into the connect form would silently do nothing.
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        guard event.type == .keyDown, event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
+              let key = event.charactersIgnoringModifiers else {
+            return super.performKeyEquivalent(with: event)
+        }
+        let action: Selector? = switch key {
+        case "x": #selector(NSText.cut(_:))
+        case "c": #selector(NSText.copy(_:))
+        case "v": #selector(NSText.paste(_:))
+        case "a": #selector(NSText.selectAll(_:))
+        case "z": Selector(("undo:"))
+        default: nil
+        }
+        if let action, NSApp.sendAction(action, to: nil, from: self) { return true }
+        return super.performKeyEquivalent(with: event)
+    }
+}
+
+/// Owns the panel: shows it under the menu bar item with a short fade and settle, sizes it to its
+/// SwiftUI content (growing and shrinking from the top edge, as a menu does), and closes it on a
+/// click elsewhere, Escape, or a change of Space.
+@MainActor
+final class PopoverController: NSObject {
+    private let panel = PopoverPanel()
+    private let hosting: NSHostingView<AnyView>
+    private var outsideClickMonitor: Any?
+    private var keyMonitor: Any?
+    private weak var anchorButton: NSStatusBarButton?
+    private(set) var isShown = false
+
+    var onShow: (() -> Void)?
+    var onHide: (() -> Void)?
+
+    init<Content: View>(@ViewBuilder content: () -> Content) {
+        let root = content()
+        hosting = NSHostingView(rootView: AnyView(EmptyView()))
+        super.init()
+        hosting.rootView = AnyView(
+            root
+                .frame(width: Theme.popoverWidth)
+                .fixedSize(horizontal: false, vertical: true)
+                .onGeometryChange(for: CGSize.self, of: { $0.size }) { [weak self] size in
+                    self?.contentSizeChanged(size)
+                }
+        )
+        hosting.sizingOptions = [.intrinsicContentSize]
+        panel.contentView = hosting
+    }
+
+    func toggle(from button: NSStatusBarButton) {
+        isShown ? hide() : show(from: button)
+    }
+
+    func show(from button: NSStatusBarButton) {
+        guard !isShown else { return }
+        isShown = true
+        anchorButton = button
+        let size = hosting.fittingSize
+        panel.setFrame(frame(for: size), display: false)
+        panel.alphaValue = 0
+        panel.makeKeyAndOrderFront(nil)
+        button.highlight(true)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = Theme.Motion.panelIn
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = 1
+        }
+        startMonitoring()
+        onShow?()
+    }
+
+    func hide() {
+        guard isShown else { return }
+        isShown = false
+        stopMonitoring()
+        anchorButton?.highlight(false)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = Theme.Motion.panelOut
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().alphaValue = 0
+        } completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, !self.isShown else { return }
+                self.panel.orderOut(nil)
+            }
+        }
+        onHide?()
+    }
+
+    private func frame(for size: CGSize) -> CGRect {
+        // When the menu bar is too full to show the item (or another app hides it), there is
+        // nothing to hang from, so the panel opens at the top right of the main screen instead.
+        guard let button = anchorButton, let window = button.window, let screen = window.screen, window.frame.width > 0 else {
+            let screen = NSScreen.main ?? NSScreen.screens[0]
+            let visible = screen.visibleFrame
+            let corner = CGRect(x: visible.maxX - PanelPlacement.margin - size.width / 2 - 1, y: visible.maxY + PanelPlacement.gap, width: 2, height: 0)
+            return PanelPlacement.frame(size: size, anchor: corner, visible: visible)
+        }
+        let anchor = window.convertToScreen(button.convert(button.bounds, to: nil))
+        return PanelPlacement.frame(size: size, anchor: anchor, visible: screen.visibleFrame)
+    }
+
+    private func contentSizeChanged(_ size: CGSize) {
+        guard isShown, size.height > 0 else { return }
+        let target = frame(for: CGSize(width: Theme.popoverWidth, height: size.height))
+        guard target != panel.frame else { return }
+        panel.setFrame(target, display: true)
+        panel.invalidateShadow()
+    }
+
+    private func startMonitoring() {
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
+            MainActor.assumeIsolated { self?.hide() }
+        }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == 53 else { return event } // Escape
+            MainActor.assumeIsolated { self?.hide() }
+            return nil
+        }
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(spaceChanged), name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+    }
+
+    private func stopMonitoring() {
+        if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        outsideClickMonitor = nil
+        keyMonitor = nil
+        NSWorkspace.shared.notificationCenter.removeObserver(self, name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+    }
+
+    @objc private func spaceChanged() { hide() }
+}
