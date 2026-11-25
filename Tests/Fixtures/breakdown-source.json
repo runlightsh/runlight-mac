@@ -1,0 +1,52 @@
+{
+  "site": "dailyphototips.com",
+  "range": {
+    "from": "2026-11-25",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "America/Toronto"
+  },
+  "dimension": "source",
+  "rows": [
+    {
+      "value": "photzy.com",
+      "visitors": 445,
+      "visits": 445,
+      "bounceRate": 0.3146067415730337,
+      "pageviews": 653,
+      "visitDuration": 81345
+    },
+    {
+      "value": "Google",
+      "visitors": 313,
+      "visits": 313,
+      "bounceRate": 0.33226837060702874,
+      "pageviews": 461,
+      "visitDuration": 76725
+    },
+    {
+      "value": "Pinterest",
+      "visitors": 57,
+      "visits": 57,
+      "bounceRate": 0.3684210526315789,
+      "pageviews": 74,
+      "visitDuration": 73405
+    },
+    {
+      "value": "Reddit",
+      "visitors": 44,
+      "visits": 44,
+      "bounceRate": 0.4090909090909091,
+      "pageviews": 59,
+      "visitDuration": 72014
+    },
+    {
+      "value": "ChatGPT",
+      "visitors": 43,
+      "visits": 43,
+      "bounceRate": 0.3953488372093023,
+      "pageviews": 65,
+      "visitDuration": 77939
+    }
+  ]
+}

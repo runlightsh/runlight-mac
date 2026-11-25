@@ -1,0 +1,29 @@
+{
+  "site": "dailyphototips.com",
+  "range": {
+    "from": "2026-11-19",
+    "to": "2026-11-25",
+    "interval": "day",
+    "timezone": "America/Toronto"
+  },
+  "compare": {
+    "from": "2026-11-12",
+    "to": "2026-11-18"
+  },
+  "stats": {
+    "visitors": 5837,
+    "visits": 5837,
+    "pageviews": 8714,
+    "viewsPerVisit": 1.49,
+    "bounceRate": 0.3094055165324653,
+    "visitDuration": 82197
+  },
+  "previous": {
+    "visitors": 5458,
+    "visits": 5458,
+    "pageviews": 8103,
+    "viewsPerVisit": 1.48,
+    "bounceRate": 0.3072554049102235,
+    "visitDuration": 81228
+  }
+}

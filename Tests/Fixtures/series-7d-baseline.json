@@ -1,0 +1,1523 @@
+{
+  "site": "dailyphototips.com",
+  "range": {
+    "from": "2026-11-19",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "America/Toronto"
+  },
+  "points": [
+    {
+      "start": 1795064400000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 22,
+      "viewsPerVisit": 1.38,
+      "bounceRate": 0.375,
+      "visitDuration": 72535
+    },
+    {
+      "start": 1795068000000,
+      "visitors": 18,
+      "visits": 18,
+      "pageviews": 23,
+      "viewsPerVisit": 1.28,
+      "bounceRate": 0.16666666666666666,
+      "visitDuration": 51359
+    },
+    {
+      "start": 1795071600000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 22,
+      "viewsPerVisit": 1.38,
+      "bounceRate": 0.375,
+      "visitDuration": 81401
+    },
+    {
+      "start": 1795075200000,
+      "visitors": 23,
+      "visits": 23,
+      "pageviews": 33,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.30434782608695654,
+      "visitDuration": 65180
+    },
+    {
+      "start": 1795078800000,
+      "visitors": 36,
+      "visits": 36,
+      "pageviews": 69,
+      "viewsPerVisit": 1.92,
+      "bounceRate": 0.16666666666666666,
+      "visitDuration": 115979
+    },
+    {
+      "start": 1795082400000,
+      "visitors": 55,
+      "visits": 55,
+      "pageviews": 81,
+      "viewsPerVisit": 1.47,
+      "bounceRate": 0.23636363636363636,
+      "visitDuration": 81595
+    },
+    {
+      "start": 1795086000000,
+      "visitors": 55,
+      "visits": 55,
+      "pageviews": 88,
+      "viewsPerVisit": 1.6,
+      "bounceRate": 0.2727272727272727,
+      "visitDuration": 91727
+    },
+    {
+      "start": 1795089600000,
+      "visitors": 66,
+      "visits": 66,
+      "pageviews": 93,
+      "viewsPerVisit": 1.41,
+      "bounceRate": 0.30303030303030304,
+      "visitDuration": 69698
+    },
+    {
+      "start": 1795093200000,
+      "visitors": 69,
+      "visits": 69,
+      "pageviews": 97,
+      "viewsPerVisit": 1.41,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 74349
+    },
+    {
+      "start": 1795096800000,
+      "visitors": 84,
+      "visits": 84,
+      "pageviews": 113,
+      "viewsPerVisit": 1.35,
+      "bounceRate": 0.35714285714285715,
+      "visitDuration": 72517
+    },
+    {
+      "start": 1795100400000,
+      "visitors": 90,
+      "visits": 90,
+      "pageviews": 135,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.24444444444444444,
+      "visitDuration": 82795
+    },
+    {
+      "start": 1795104000000,
+      "visitors": 63,
+      "visits": 63,
+      "pageviews": 100,
+      "viewsPerVisit": 1.59,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 89323
+    },
+    {
+      "start": 1795107600000,
+      "visitors": 54,
+      "visits": 54,
+      "pageviews": 77,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.3148148148148148,
+      "visitDuration": 73060
+    },
+    {
+      "start": 1795111200000,
+      "visitors": 39,
+      "visits": 39,
+      "pageviews": 57,
+      "viewsPerVisit": 1.46,
+      "bounceRate": 0.3076923076923077,
+      "visitDuration": 82509
+    },
+    {
+      "start": 1795114800000,
+      "visitors": 23,
+      "visits": 23,
+      "pageviews": 36,
+      "viewsPerVisit": 1.57,
+      "bounceRate": 0.21739130434782608,
+      "visitDuration": 93980
+    },
+    {
+      "start": 1795118400000,
+      "visitors": 26,
+      "visits": 26,
+      "pageviews": 51,
+      "viewsPerVisit": 1.96,
+      "bounceRate": 0.23076923076923078,
+      "visitDuration": 121833
+    },
+    {
+      "start": 1795122000000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 19,
+      "viewsPerVisit": 1.36,
+      "bounceRate": 0.35714285714285715,
+      "visitDuration": 70570
+    },
+    {
+      "start": 1795125600000,
+      "visitors": 24,
+      "visits": 24,
+      "pageviews": 35,
+      "viewsPerVisit": 1.46,
+      "bounceRate": 0.25,
+      "visitDuration": 78639
+    },
+    {
+      "start": 1795129200000,
+      "visitors": 10,
+      "visits": 10,
+      "pageviews": 15,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.2,
+      "visitDuration": 103750
+    },
+    {
+      "start": 1795132800000,
+      "visitors": 9,
+      "visits": 9,
+      "pageviews": 16,
+      "viewsPerVisit": 1.78,
+      "bounceRate": 0.1111111111111111,
+      "visitDuration": 97652
+    },
+    {
+      "start": 1795136400000,
+      "visitors": 10,
+      "visits": 10,
+      "pageviews": 20,
+      "viewsPerVisit": 2,
+      "bounceRate": 0.2,
+      "visitDuration": 123180
+    },
+    {
+      "start": 1795140000000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 28,
+      "viewsPerVisit": 1.47,
+      "bounceRate": 0.3684210526315789,
+      "visitDuration": 80591
+    },
+    {
+      "start": 1795143600000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 20,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.35714285714285715,
+      "visitDuration": 67860
+    },
+    {
+      "start": 1795147200000,
+      "visitors": 10,
+      "visits": 10,
+      "pageviews": 13,
+      "viewsPerVisit": 1.3,
+      "bounceRate": 0.5,
+      "visitDuration": 42324
+    },
+    {
+      "start": 1795150800000,
+      "visitors": 9,
+      "visits": 9,
+      "pageviews": 12,
+      "viewsPerVisit": 1.33,
+      "bounceRate": 0.2222222222222222,
+      "visitDuration": 72953
+    },
+    {
+      "start": 1795154400000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 23,
+      "viewsPerVisit": 1.44,
+      "bounceRate": 0.1875,
+      "visitDuration": 87031
+    },
+    {
+      "start": 1795158000000,
+      "visitors": 23,
+      "visits": 23,
+      "pageviews": 46,
+      "viewsPerVisit": 2,
+      "bounceRate": 0.13043478260869565,
+      "visitDuration": 130116
+    },
+    {
+      "start": 1795161600000,
+      "visitors": 21,
+      "visits": 21,
+      "pageviews": 34,
+      "viewsPerVisit": 1.62,
+      "bounceRate": 0.47619047619047616,
+      "visitDuration": 65593
+    },
+    {
+      "start": 1795165200000,
+      "visitors": 36,
+      "visits": 36,
+      "pageviews": 46,
+      "viewsPerVisit": 1.28,
+      "bounceRate": 0.4166666666666667,
+      "visitDuration": 60429
+    },
+    {
+      "start": 1795168800000,
+      "visitors": 36,
+      "visits": 36,
+      "pageviews": 68,
+      "viewsPerVisit": 1.89,
+      "bounceRate": 0.25,
+      "visitDuration": 122064
+    },
+    {
+      "start": 1795172400000,
+      "visitors": 55,
+      "visits": 55,
+      "pageviews": 77,
+      "viewsPerVisit": 1.4,
+      "bounceRate": 0.32727272727272727,
+      "visitDuration": 76198
+    },
+    {
+      "start": 1795176000000,
+      "visitors": 66,
+      "visits": 66,
+      "pageviews": 87,
+      "viewsPerVisit": 1.32,
+      "bounceRate": 0.3181818181818182,
+      "visitDuration": 66796
+    },
+    {
+      "start": 1795179600000,
+      "visitors": 76,
+      "visits": 76,
+      "pageviews": 109,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.39473684210526316,
+      "visitDuration": 69967
+    },
+    {
+      "start": 1795183200000,
+      "visitors": 72,
+      "visits": 72,
+      "pageviews": 100,
+      "viewsPerVisit": 1.39,
+      "bounceRate": 0.4166666666666667,
+      "visitDuration": 71668
+    },
+    {
+      "start": 1795186800000,
+      "visitors": 76,
+      "visits": 76,
+      "pageviews": 121,
+      "viewsPerVisit": 1.59,
+      "bounceRate": 0.35526315789473684,
+      "visitDuration": 88177
+    },
+    {
+      "start": 1795190400000,
+      "visitors": 57,
+      "visits": 57,
+      "pageviews": 83,
+      "viewsPerVisit": 1.46,
+      "bounceRate": 0.3157894736842105,
+      "visitDuration": 76790
+    },
+    {
+      "start": 1795194000000,
+      "visitors": 63,
+      "visits": 63,
+      "pageviews": 100,
+      "viewsPerVisit": 1.59,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 89683
+    },
+    {
+      "start": 1795197600000,
+      "visitors": 50,
+      "visits": 50,
+      "pageviews": 64,
+      "viewsPerVisit": 1.28,
+      "bounceRate": 0.3,
+      "visitDuration": 68880
+    },
+    {
+      "start": 1795201200000,
+      "visitors": 32,
+      "visits": 32,
+      "pageviews": 49,
+      "viewsPerVisit": 1.53,
+      "bounceRate": 0.28125,
+      "visitDuration": 85264
+    },
+    {
+      "start": 1795204800000,
+      "visitors": 24,
+      "visits": 24,
+      "pageviews": 44,
+      "viewsPerVisit": 1.83,
+      "bounceRate": 0.08333333333333333,
+      "visitDuration": 120093
+    },
+    {
+      "start": 1795208400000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 31,
+      "viewsPerVisit": 1.63,
+      "bounceRate": 0.3157894736842105,
+      "visitDuration": 92242
+    },
+    {
+      "start": 1795212000000,
+      "visitors": 15,
+      "visits": 15,
+      "pageviews": 31,
+      "viewsPerVisit": 2.07,
+      "bounceRate": 0.26666666666666666,
+      "visitDuration": 130852
+    },
+    {
+      "start": 1795215600000,
+      "visitors": 13,
+      "visits": 13,
+      "pageviews": 20,
+      "viewsPerVisit": 1.54,
+      "bounceRate": 0.3076923076923077,
+      "visitDuration": 55344
+    },
+    {
+      "start": 1795219200000,
+      "visitors": 11,
+      "visits": 11,
+      "pageviews": 24,
+      "viewsPerVisit": 2.18,
+      "bounceRate": 0.2727272727272727,
+      "visitDuration": 132136
+    },
+    {
+      "start": 1795222800000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 22,
+      "viewsPerVisit": 1.38,
+      "bounceRate": 0.1875,
+      "visitDuration": 92339
+    },
+    {
+      "start": 1795226400000,
+      "visitors": 8,
+      "visits": 8,
+      "pageviews": 13,
+      "viewsPerVisit": 1.63,
+      "bounceRate": 0.25,
+      "visitDuration": 111586
+    },
+    {
+      "start": 1795230000000,
+      "visitors": 9,
+      "visits": 9,
+      "pageviews": 15,
+      "viewsPerVisit": 1.67,
+      "bounceRate": 0.4444444444444444,
+      "visitDuration": 86102
+    },
+    {
+      "start": 1795233600000,
+      "visitors": 5,
+      "visits": 5,
+      "pageviews": 8,
+      "viewsPerVisit": 1.6,
+      "bounceRate": 0.2,
+      "visitDuration": 101424
+    },
+    {
+      "start": 1795237200000,
+      "visitors": 13,
+      "visits": 13,
+      "pageviews": 16,
+      "viewsPerVisit": 1.23,
+      "bounceRate": 0.23076923076923078,
+      "visitDuration": 87923
+    },
+    {
+      "start": 1795240800000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 29,
+      "viewsPerVisit": 1.81,
+      "bounceRate": 0.1875,
+      "visitDuration": 116341
+    },
+    {
+      "start": 1795244400000,
+      "visitors": 22,
+      "visits": 22,
+      "pageviews": 26,
+      "viewsPerVisit": 1.18,
+      "bounceRate": 0.22727272727272727,
+      "visitDuration": 52383
+    },
+    {
+      "start": 1795248000000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 27,
+      "viewsPerVisit": 1.42,
+      "bounceRate": 0.21052631578947367,
+      "visitDuration": 69918
+    },
+    {
+      "start": 1795251600000,
+      "visitors": 23,
+      "visits": 23,
+      "pageviews": 36,
+      "viewsPerVisit": 1.57,
+      "bounceRate": 0.30434782608695654,
+      "visitDuration": 84806
+    },
+    {
+      "start": 1795255200000,
+      "visitors": 23,
+      "visits": 23,
+      "pageviews": 37,
+      "viewsPerVisit": 1.61,
+      "bounceRate": 0.21739130434782608,
+      "visitDuration": 99172
+    },
+    {
+      "start": 1795258800000,
+      "visitors": 40,
+      "visits": 40,
+      "pageviews": 60,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.25,
+      "visitDuration": 80669
+    },
+    {
+      "start": 1795262400000,
+      "visitors": 44,
+      "visits": 44,
+      "pageviews": 77,
+      "viewsPerVisit": 1.75,
+      "bounceRate": 0.29545454545454547,
+      "visitDuration": 93222
+    },
+    {
+      "start": 1795266000000,
+      "visitors": 46,
+      "visits": 46,
+      "pageviews": 72,
+      "viewsPerVisit": 1.57,
+      "bounceRate": 0.391304347826087,
+      "visitDuration": 82713
+    },
+    {
+      "start": 1795269600000,
+      "visitors": 41,
+      "visits": 41,
+      "pageviews": 59,
+      "viewsPerVisit": 1.44,
+      "bounceRate": 0.4146341463414634,
+      "visitDuration": 73426
+    },
+    {
+      "start": 1795273200000,
+      "visitors": 56,
+      "visits": 56,
+      "pageviews": 84,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.23214285714285715,
+      "visitDuration": 92983
+    },
+    {
+      "start": 1795276800000,
+      "visitors": 53,
+      "visits": 53,
+      "pageviews": 71,
+      "viewsPerVisit": 1.34,
+      "bounceRate": 0.2830188679245283,
+      "visitDuration": 65496
+    },
+    {
+      "start": 1795280400000,
+      "visitors": 34,
+      "visits": 34,
+      "pageviews": 54,
+      "viewsPerVisit": 1.59,
+      "bounceRate": 0.29411764705882354,
+      "visitDuration": 91810
+    },
+    {
+      "start": 1795284000000,
+      "visitors": 21,
+      "visits": 21,
+      "pageviews": 35,
+      "viewsPerVisit": 1.67,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 102596
+    },
+    {
+      "start": 1795287600000,
+      "visitors": 25,
+      "visits": 25,
+      "pageviews": 34,
+      "viewsPerVisit": 1.36,
+      "bounceRate": 0.28,
+      "visitDuration": 72206
+    },
+    {
+      "start": 1795291200000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 35,
+      "viewsPerVisit": 2.06,
+      "bounceRate": 0.29411764705882354,
+      "visitDuration": 140227
+    },
+    {
+      "start": 1795294800000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 32,
+      "viewsPerVisit": 1.68,
+      "bounceRate": 0.3684210526315789,
+      "visitDuration": 75436
+    },
+    {
+      "start": 1795298400000,
+      "visitors": 11,
+      "visits": 11,
+      "pageviews": 16,
+      "viewsPerVisit": 1.45,
+      "bounceRate": 0.2727272727272727,
+      "visitDuration": 73034
+    },
+    {
+      "start": 1795302000000,
+      "visitors": 10,
+      "visits": 10,
+      "pageviews": 18,
+      "viewsPerVisit": 1.8,
+      "bounceRate": 0.2,
+      "visitDuration": 109586
+    },
+    {
+      "start": 1795305600000,
+      "visitors": 15,
+      "visits": 15,
+      "pageviews": 23,
+      "viewsPerVisit": 1.53,
+      "bounceRate": 0.2,
+      "visitDuration": 78719
+    },
+    {
+      "start": 1795309200000,
+      "visitors": 8,
+      "visits": 8,
+      "pageviews": 10,
+      "viewsPerVisit": 1.25,
+      "bounceRate": 0.375,
+      "visitDuration": 48883
+    },
+    {
+      "start": 1795312800000,
+      "visitors": 10,
+      "visits": 10,
+      "pageviews": 17,
+      "viewsPerVisit": 1.7,
+      "bounceRate": 0.2,
+      "visitDuration": 97928
+    },
+    {
+      "start": 1795316400000,
+      "visitors": 10,
+      "visits": 10,
+      "pageviews": 17,
+      "viewsPerVisit": 1.7,
+      "bounceRate": 0.4,
+      "visitDuration": 121260
+    },
+    {
+      "start": 1795320000000,
+      "visitors": 6,
+      "visits": 6,
+      "pageviews": 6,
+      "viewsPerVisit": 1,
+      "bounceRate": 0.5,
+      "visitDuration": 49410
+    },
+    {
+      "start": 1795323600000,
+      "visitors": 15,
+      "visits": 15,
+      "pageviews": 20,
+      "viewsPerVisit": 1.33,
+      "bounceRate": 0.4,
+      "visitDuration": 73340
+    },
+    {
+      "start": 1795327200000,
+      "visitors": 21,
+      "visits": 21,
+      "pageviews": 30,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.14285714285714285,
+      "visitDuration": 97930
+    },
+    {
+      "start": 1795330800000,
+      "visitors": 11,
+      "visits": 11,
+      "pageviews": 13,
+      "viewsPerVisit": 1.18,
+      "bounceRate": 0.45454545454545453,
+      "visitDuration": 51252
+    },
+    {
+      "start": 1795334400000,
+      "visitors": 13,
+      "visits": 13,
+      "pageviews": 16,
+      "viewsPerVisit": 1.23,
+      "bounceRate": 0.38461538461538464,
+      "visitDuration": 61065
+    },
+    {
+      "start": 1795338000000,
+      "visitors": 28,
+      "visits": 28,
+      "pageviews": 40,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.35714285714285715,
+      "visitDuration": 72785
+    },
+    {
+      "start": 1795341600000,
+      "visitors": 23,
+      "visits": 23,
+      "pageviews": 32,
+      "viewsPerVisit": 1.39,
+      "bounceRate": 0.30434782608695654,
+      "visitDuration": 74801
+    },
+    {
+      "start": 1795345200000,
+      "visitors": 32,
+      "visits": 32,
+      "pageviews": 54,
+      "viewsPerVisit": 1.69,
+      "bounceRate": 0.25,
+      "visitDuration": 97346
+    },
+    {
+      "start": 1795348800000,
+      "visitors": 44,
+      "visits": 44,
+      "pageviews": 55,
+      "viewsPerVisit": 1.25,
+      "bounceRate": 0.4090909090909091,
+      "visitDuration": 56719
+    },
+    {
+      "start": 1795352400000,
+      "visitors": 60,
+      "visits": 60,
+      "pageviews": 82,
+      "viewsPerVisit": 1.37,
+      "bounceRate": 0.35,
+      "visitDuration": 70616
+    },
+    {
+      "start": 1795356000000,
+      "visitors": 60,
+      "visits": 60,
+      "pageviews": 91,
+      "viewsPerVisit": 1.52,
+      "bounceRate": 0.26666666666666666,
+      "visitDuration": 89897
+    },
+    {
+      "start": 1795359600000,
+      "visitors": 58,
+      "visits": 58,
+      "pageviews": 87,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.3103448275862069,
+      "visitDuration": 83438
+    },
+    {
+      "start": 1795363200000,
+      "visitors": 51,
+      "visits": 51,
+      "pageviews": 69,
+      "viewsPerVisit": 1.35,
+      "bounceRate": 0.3137254901960784,
+      "visitDuration": 68274
+    },
+    {
+      "start": 1795366800000,
+      "visitors": 44,
+      "visits": 44,
+      "pageviews": 61,
+      "viewsPerVisit": 1.39,
+      "bounceRate": 0.22727272727272727,
+      "visitDuration": 79879
+    },
+    {
+      "start": 1795370400000,
+      "visitors": 31,
+      "visits": 31,
+      "pageviews": 39,
+      "viewsPerVisit": 1.26,
+      "bounceRate": 0.3870967741935484,
+      "visitDuration": 69422
+    },
+    {
+      "start": 1795374000000,
+      "visitors": 26,
+      "visits": 26,
+      "pageviews": 39,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.15384615384615385,
+      "visitDuration": 88098
+    },
+    {
+      "start": 1795377600000,
+      "visitors": 15,
+      "visits": 15,
+      "pageviews": 18,
+      "viewsPerVisit": 1.2,
+      "bounceRate": 0.26666666666666666,
+      "visitDuration": 76252
+    },
+    {
+      "start": 1795381200000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 21,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.21428571428571427,
+      "visitDuration": 67678
+    },
+    {
+      "start": 1795384800000,
+      "visitors": 20,
+      "visits": 20,
+      "pageviews": 32,
+      "viewsPerVisit": 1.6,
+      "bounceRate": 0.35,
+      "visitDuration": 86432
+    },
+    {
+      "start": 1795388400000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 21,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.42857142857142855,
+      "visitDuration": 59466
+    },
+    {
+      "start": 1795392000000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 23,
+      "viewsPerVisit": 1.64,
+      "bounceRate": 0.21428571428571427,
+      "visitDuration": 77115
+    },
+    {
+      "start": 1795395600000,
+      "visitors": 22,
+      "visits": 22,
+      "pageviews": 41,
+      "viewsPerVisit": 1.86,
+      "bounceRate": 0.2727272727272727,
+      "visitDuration": 113376
+    },
+    {
+      "start": 1795399200000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 24,
+      "viewsPerVisit": 1.41,
+      "bounceRate": 0.29411764705882354,
+      "visitDuration": 73962
+    },
+    {
+      "start": 1795402800000,
+      "visitors": 13,
+      "visits": 13,
+      "pageviews": 24,
+      "viewsPerVisit": 1.85,
+      "bounceRate": 0.3076923076923077,
+      "visitDuration": 114397
+    },
+    {
+      "start": 1795406400000,
+      "visitors": 20,
+      "visits": 20,
+      "pageviews": 26,
+      "viewsPerVisit": 1.3,
+      "bounceRate": 0.3,
+      "visitDuration": 61227
+    },
+    {
+      "start": 1795410000000,
+      "visitors": 18,
+      "visits": 18,
+      "pageviews": 25,
+      "viewsPerVisit": 1.39,
+      "bounceRate": 0.2222222222222222,
+      "visitDuration": 81249
+    },
+    {
+      "start": 1795413600000,
+      "visitors": 27,
+      "visits": 27,
+      "pageviews": 39,
+      "viewsPerVisit": 1.44,
+      "bounceRate": 0.25925925925925924,
+      "visitDuration": 84335
+    },
+    {
+      "start": 1795417200000,
+      "visitors": 24,
+      "visits": 24,
+      "pageviews": 30,
+      "viewsPerVisit": 1.25,
+      "bounceRate": 0.4166666666666667,
+      "visitDuration": 55285
+    },
+    {
+      "start": 1795420800000,
+      "visitors": 28,
+      "visits": 28,
+      "pageviews": 45,
+      "viewsPerVisit": 1.61,
+      "bounceRate": 0.2857142857142857,
+      "visitDuration": 95208
+    },
+    {
+      "start": 1795424400000,
+      "visitors": 30,
+      "visits": 30,
+      "pageviews": 47,
+      "viewsPerVisit": 1.57,
+      "bounceRate": 0.3,
+      "visitDuration": 87004
+    },
+    {
+      "start": 1795428000000,
+      "visitors": 40,
+      "visits": 40,
+      "pageviews": 63,
+      "viewsPerVisit": 1.58,
+      "bounceRate": 0.3,
+      "visitDuration": 89227
+    },
+    {
+      "start": 1795431600000,
+      "visitors": 56,
+      "visits": 56,
+      "pageviews": 87,
+      "viewsPerVisit": 1.55,
+      "bounceRate": 0.26785714285714285,
+      "visitDuration": 83034
+    },
+    {
+      "start": 1795435200000,
+      "visitors": 72,
+      "visits": 72,
+      "pageviews": 111,
+      "viewsPerVisit": 1.54,
+      "bounceRate": 0.3055555555555556,
+      "visitDuration": 87212
+    },
+    {
+      "start": 1795438800000,
+      "visitors": 68,
+      "visits": 68,
+      "pageviews": 102,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.23529411764705882,
+      "visitDuration": 88574
+    },
+    {
+      "start": 1795442400000,
+      "visitors": 65,
+      "visits": 65,
+      "pageviews": 93,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.24615384615384617,
+      "visitDuration": 76721
+    },
+    {
+      "start": 1795446000000,
+      "visitors": 83,
+      "visits": 83,
+      "pageviews": 143,
+      "viewsPerVisit": 1.72,
+      "bounceRate": 0.1927710843373494,
+      "visitDuration": 106903
+    },
+    {
+      "start": 1795449600000,
+      "visitors": 72,
+      "visits": 72,
+      "pageviews": 109,
+      "viewsPerVisit": 1.51,
+      "bounceRate": 0.25,
+      "visitDuration": 86659
+    },
+    {
+      "start": 1795453200000,
+      "visitors": 49,
+      "visits": 49,
+      "pageviews": 77,
+      "viewsPerVisit": 1.57,
+      "bounceRate": 0.3673469387755102,
+      "visitDuration": 81231
+    },
+    {
+      "start": 1795456800000,
+      "visitors": 34,
+      "visits": 34,
+      "pageviews": 47,
+      "viewsPerVisit": 1.38,
+      "bounceRate": 0.4411764705882353,
+      "visitDuration": 71168
+    },
+    {
+      "start": 1795460400000,
+      "visitors": 28,
+      "visits": 28,
+      "pageviews": 39,
+      "viewsPerVisit": 1.39,
+      "bounceRate": 0.35714285714285715,
+      "visitDuration": 71788
+    },
+    {
+      "start": 1795464000000,
+      "visitors": 26,
+      "visits": 26,
+      "pageviews": 40,
+      "viewsPerVisit": 1.54,
+      "bounceRate": 0.34615384615384615,
+      "visitDuration": 90695
+    },
+    {
+      "start": 1795467600000,
+      "visitors": 22,
+      "visits": 22,
+      "pageviews": 28,
+      "viewsPerVisit": 1.27,
+      "bounceRate": 0.3181818181818182,
+      "visitDuration": 75908
+    },
+    {
+      "start": 1795471200000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 22,
+      "viewsPerVisit": 1.16,
+      "bounceRate": 0.42105263157894735,
+      "visitDuration": 55175
+    },
+    {
+      "start": 1795474800000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 18,
+      "viewsPerVisit": 1.29,
+      "bounceRate": 0.5,
+      "visitDuration": 66289
+    },
+    {
+      "start": 1795478400000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 24,
+      "viewsPerVisit": 1.71,
+      "bounceRate": 0.2857142857142857,
+      "visitDuration": 102776
+    },
+    {
+      "start": 1795482000000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 28,
+      "viewsPerVisit": 1.47,
+      "bounceRate": 0.3684210526315789,
+      "visitDuration": 89547
+    },
+    {
+      "start": 1795485600000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 28,
+      "viewsPerVisit": 1.65,
+      "bounceRate": 0.23529411764705882,
+      "visitDuration": 96250
+    },
+    {
+      "start": 1795489200000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 26,
+      "viewsPerVisit": 1.53,
+      "bounceRate": 0.35294117647058826,
+      "visitDuration": 91665
+    },
+    {
+      "start": 1795492800000,
+      "visitors": 14,
+      "visits": 14,
+      "pageviews": 22,
+      "viewsPerVisit": 1.57,
+      "bounceRate": 0.2857142857142857,
+      "visitDuration": 99087
+    },
+    {
+      "start": 1795496400000,
+      "visitors": 19,
+      "visits": 19,
+      "pageviews": 26,
+      "viewsPerVisit": 1.37,
+      "bounceRate": 0.42105263157894735,
+      "visitDuration": 71490
+    },
+    {
+      "start": 1795500000000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 30,
+      "viewsPerVisit": 1.76,
+      "bounceRate": 0.35294117647058826,
+      "visitDuration": 96555
+    },
+    {
+      "start": 1795503600000,
+      "visitors": 20,
+      "visits": 20,
+      "pageviews": 28,
+      "viewsPerVisit": 1.4,
+      "bounceRate": 0.35,
+      "visitDuration": 57674
+    },
+    {
+      "start": 1795507200000,
+      "visitors": 25,
+      "visits": 25,
+      "pageviews": 37,
+      "viewsPerVisit": 1.48,
+      "bounceRate": 0.36,
+      "visitDuration": 85288
+    },
+    {
+      "start": 1795510800000,
+      "visitors": 29,
+      "visits": 29,
+      "pageviews": 51,
+      "viewsPerVisit": 1.76,
+      "bounceRate": 0.1724137931034483,
+      "visitDuration": 115684
+    },
+    {
+      "start": 1795514400000,
+      "visitors": 48,
+      "visits": 48,
+      "pageviews": 65,
+      "viewsPerVisit": 1.35,
+      "bounceRate": 0.3958333333333333,
+      "visitDuration": 73111
+    },
+    {
+      "start": 1795518000000,
+      "visitors": 52,
+      "visits": 52,
+      "pageviews": 85,
+      "viewsPerVisit": 1.63,
+      "bounceRate": 0.23076923076923078,
+      "visitDuration": 101400
+    },
+    {
+      "start": 1795521600000,
+      "visitors": 55,
+      "visits": 55,
+      "pageviews": 85,
+      "viewsPerVisit": 1.55,
+      "bounceRate": 0.34545454545454546,
+      "visitDuration": 83200
+    },
+    {
+      "start": 1795525200000,
+      "visitors": 61,
+      "visits": 61,
+      "pageviews": 86,
+      "viewsPerVisit": 1.41,
+      "bounceRate": 0.32786885245901637,
+      "visitDuration": 82546
+    },
+    {
+      "start": 1795528800000,
+      "visitors": 59,
+      "visits": 59,
+      "pageviews": 96,
+      "viewsPerVisit": 1.63,
+      "bounceRate": 0.23728813559322035,
+      "visitDuration": 88021
+    },
+    {
+      "start": 1795532400000,
+      "visitors": 65,
+      "visits": 65,
+      "pageviews": 86,
+      "viewsPerVisit": 1.32,
+      "bounceRate": 0.36923076923076925,
+      "visitDuration": 73511
+    },
+    {
+      "start": 1795536000000,
+      "visitors": 73,
+      "visits": 73,
+      "pageviews": 101,
+      "viewsPerVisit": 1.38,
+      "bounceRate": 0.3835616438356164,
+      "visitDuration": 69154
+    },
+    {
+      "start": 1795539600000,
+      "visitors": 57,
+      "visits": 57,
+      "pageviews": 74,
+      "viewsPerVisit": 1.3,
+      "bounceRate": 0.3157894736842105,
+      "visitDuration": 72960
+    },
+    {
+      "start": 1795543200000,
+      "visitors": 38,
+      "visits": 38,
+      "pageviews": 63,
+      "viewsPerVisit": 1.66,
+      "bounceRate": 0.2631578947368421,
+      "visitDuration": 92205
+    },
+    {
+      "start": 1795546800000,
+      "visitors": 27,
+      "visits": 27,
+      "pageviews": 40,
+      "viewsPerVisit": 1.48,
+      "bounceRate": 0.37037037037037035,
+      "visitDuration": 73421
+    },
+    {
+      "start": 1795550400000,
+      "visitors": 29,
+      "visits": 29,
+      "pageviews": 43,
+      "viewsPerVisit": 1.48,
+      "bounceRate": 0.3103448275862069,
+      "visitDuration": 82738
+    },
+    {
+      "start": 1795554000000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 21,
+      "viewsPerVisit": 1.31,
+      "bounceRate": 0.5,
+      "visitDuration": 55051
+    },
+    {
+      "start": 1795557600000,
+      "visitors": 13,
+      "visits": 13,
+      "pageviews": 17,
+      "viewsPerVisit": 1.31,
+      "bounceRate": 0.46153846153846156,
+      "visitDuration": 63488
+    },
+    {
+      "start": 1795561200000,
+      "visitors": 16,
+      "visits": 16,
+      "pageviews": 20,
+      "viewsPerVisit": 1.25,
+      "bounceRate": 0.1875,
+      "visitDuration": 68745
+    },
+    {
+      "start": 1795564800000,
+      "visitors": 18,
+      "visits": 18,
+      "pageviews": 30,
+      "viewsPerVisit": 1.67,
+      "bounceRate": 0.16666666666666666,
+      "visitDuration": 102541
+    },
+    {
+      "start": 1795568400000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 24,
+      "viewsPerVisit": 1.41,
+      "bounceRate": 0.47058823529411764,
+      "visitDuration": 52917
+    },
+    {
+      "start": 1795572000000,
+      "visitors": 20,
+      "visits": 20,
+      "pageviews": 29,
+      "viewsPerVisit": 1.45,
+      "bounceRate": 0.25,
+      "visitDuration": 93682
+    },
+    {
+      "start": 1795575600000,
+      "visitors": 18,
+      "visits": 18,
+      "pageviews": 34,
+      "viewsPerVisit": 1.89,
+      "bounceRate": 0.05555555555555555,
+      "visitDuration": 121131
+    },
+    {
+      "start": 1795579200000,
+      "visitors": 17,
+      "visits": 17,
+      "pageviews": 36,
+      "viewsPerVisit": 2.12,
+      "bounceRate": 0.35294117647058826,
+      "visitDuration": 136801
+    },
+    {
+      "start": 1795582800000,
+      "visitors": 15,
+      "visits": 15,
+      "pageviews": 23,
+      "viewsPerVisit": 1.53,
+      "bounceRate": 0.26666666666666666,
+      "visitDuration": 110328
+    },
+    {
+      "start": 1795586400000,
+      "visitors": 12,
+      "visits": 12,
+      "pageviews": 18,
+      "viewsPerVisit": 1.5,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 89411
+    },
+    {
+      "start": 1795590000000,
+      "visitors": 27,
+      "visits": 27,
+      "pageviews": 43,
+      "viewsPerVisit": 1.59,
+      "bounceRate": 0.4074074074074074,
+      "visitDuration": 80427
+    },
+    {
+      "start": 1795593600000,
+      "visitors": 30,
+      "visits": 30,
+      "pageviews": 39,
+      "viewsPerVisit": 1.3,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 75304
+    },
+    {
+      "start": 1795597200000,
+      "visitors": 36,
+      "visits": 36,
+      "pageviews": 60,
+      "viewsPerVisit": 1.67,
+      "bounceRate": 0.2777777777777778,
+      "visitDuration": 94353
+    },
+    {
+      "start": 1795600800000,
+      "visitors": 42,
+      "visits": 42,
+      "pageviews": 62,
+      "viewsPerVisit": 1.48,
+      "bounceRate": 0.3333333333333333,
+      "visitDuration": 68326
+    },
+    {
+      "start": 1795604400000,
+      "visitors": 69,
+      "visits": 69,
+      "pageviews": 101,
+      "viewsPerVisit": 1.46,
+      "bounceRate": 0.3188405797101449,
+      "visitDuration": 77343
+    },
+    {
+      "start": 1795608000000,
+      "visitors": 98,
+      "visits": 98,
+      "pageviews": 143,
+      "viewsPerVisit": 1.46,
+      "bounceRate": 0.3469387755102041,
+      "visitDuration": 80085
+    },
+    {
+      "start": 1795611600000,
+      "visitors": 93,
+      "visits": 93,
+      "pageviews": 144,
+      "viewsPerVisit": 1.55,
+      "bounceRate": 0.26881720430107525,
+      "visitDuration": 97091
+    },
+    {
+      "start": 1795615200000,
+      "visitors": 86,
+      "visits": 86,
+      "pageviews": 134,
+      "viewsPerVisit": 1.56,
+      "bounceRate": 0.3372093023255814,
+      "visitDuration": 77028
+    },
+    {
+      "start": 1795618800000,
+      "visitors": 87,
+      "visits": 87,
+      "pageviews": 122,
+      "viewsPerVisit": 1.4,
+      "bounceRate": 0.3448275862068966,
+      "visitDuration": 69196
+    },
+    {
+      "start": 1795622400000,
+      "visitors": 75,
+      "visits": 75,
+      "pageviews": 109,
+      "viewsPerVisit": 1.45,
+      "bounceRate": 0.4,
+      "visitDuration": 67535
+    },
+    {
+      "start": 1795626000000,
+      "visitors": 69,
+      "visits": 69,
+      "pageviews": 100,
+      "viewsPerVisit": 1.45,
+      "bounceRate": 0.34782608695652173,
+      "visitDuration": 81425
+    },
+    {
+      "start": 1795629600000,
+      "visitors": 61,
+      "visits": 61,
+      "pageviews": 87,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.32786885245901637,
+      "visitDuration": 81737
+    },
+    {
+      "start": 1795633200000,
+      "visitors": 254,
+      "visits": 254,
+      "pageviews": 376,
+      "viewsPerVisit": 1.48,
+      "bounceRate": 0.31496062992125984,
+      "visitDuration": 82148
+    },
+    {
+      "start": 1795636800000,
+      "visitors": 219,
+      "visits": 219,
+      "pageviews": 314,
+      "viewsPerVisit": 1.43,
+      "bounceRate": 0.3287671232876712,
+      "visitDuration": 78300
+    },
+    {
+      "start": 1795640400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795644000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795647600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795651200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795654800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795658400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795662000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795665600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "error": "/yt is already taken",
+  "code": "link_taken",
+  "params": {
+    "slug": "yt"
+  }
+}

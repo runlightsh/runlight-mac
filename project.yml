@@ -45,6 +45,8 @@ targets:
         LSApplicationCategoryType: public.app-category.productivity
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSHumanReadableCopyright: "Runlight is open source."
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
     entitlements:
       path: Resources/Runlight.entitlements
       properties:
@@ -63,6 +65,11 @@ targets:
     platform: macOS
     sources:
       - path: Tests
+        excludes:
+          - Fixtures
+      - path: Tests/Fixtures
+        type: folder
+        buildPhase: resources
     dependencies:
       - target: Runlight
     settings:

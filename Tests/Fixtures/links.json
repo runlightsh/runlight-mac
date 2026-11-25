@@ -1,0 +1,18 @@
+{
+  "prefix": "https://hub.example/go",
+  "domains": [],
+  "links": [
+    {
+      "id": "b8f9f51c270fa89a4eb457fd",
+      "site": "dailyphototips.com",
+      "domain": "",
+      "slug": "yt",
+      "name": "YouTube bio",
+      "url": "https://dailyphototips.com/newsletter?utm_source=youtube",
+      "createdAt": 1795638600000,
+      "updatedAt": 1795638600000,
+      "clicks": 178,
+      "visitors": 178
+    }
+  ]
+}

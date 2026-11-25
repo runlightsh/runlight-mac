@@ -1,0 +1,5 @@
+{
+  "error": "The destination must be a full URL, starting with https://",
+  "code": "link_url",
+  "params": {}
+}

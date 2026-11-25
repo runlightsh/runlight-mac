@@ -1,0 +1,7 @@
+{
+  "error": "Unknown timezone \"Mars/Olympus\"",
+  "code": "unknown_timezone",
+  "params": {
+    "timezone": "Mars/Olympus"
+  }
+}

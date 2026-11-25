@@ -1,0 +1,275 @@
+{
+  "now": "2026-11-25T20:30:00.000Z",
+  "sites": {
+    "dpt": "dailyphototips.com",
+    "jcp": "joncphillips.com",
+    "tulvane": "tulvane.com",
+    "empty": "newsite.dev"
+  },
+  "fixtures": {
+    "api": {
+      "method": "GET",
+      "path": "/api",
+      "token": "none",
+      "status": 200
+    },
+    "token-read": {
+      "method": "GET",
+      "path": "/api/token",
+      "token": "read",
+      "status": 200
+    },
+    "token-manage": {
+      "method": "GET",
+      "path": "/api/token",
+      "token": "manage",
+      "status": 200
+    },
+    "sites": {
+      "method": "GET",
+      "path": "/api/sites",
+      "token": "read",
+      "status": 200
+    },
+    "icon-none": {
+      "method": "GET",
+      "path": "/api/icon?site=newsite.dev",
+      "token": "read",
+      "status": 404
+    },
+    "stats-today": {
+      "method": "GET",
+      "path": "/api/stats?site=dailyphototips.com&period=today",
+      "token": "read",
+      "status": 200
+    },
+    "stats-7d": {
+      "method": "GET",
+      "path": "/api/stats?site=dailyphototips.com&period=7d",
+      "token": "read",
+      "status": 200
+    },
+    "stats-30d": {
+      "method": "GET",
+      "path": "/api/stats?site=dailyphototips.com&period=30d",
+      "token": "read",
+      "status": 200
+    },
+    "stats-today-empty": {
+      "method": "GET",
+      "path": "/api/stats?site=newsite.dev&period=today",
+      "token": "read",
+      "status": 200
+    },
+    "stats-today-london": {
+      "method": "GET",
+      "path": "/api/stats?site=tulvane.com&period=today",
+      "token": "read",
+      "status": 200
+    },
+    "series-today": {
+      "method": "GET",
+      "path": "/api/series?site=dailyphototips.com&period=today&interval=hour&compare=previous",
+      "token": "read",
+      "status": 200
+    },
+    "series-today-london": {
+      "method": "GET",
+      "path": "/api/series?site=tulvane.com&period=today&interval=hour&compare=previous",
+      "token": "read",
+      "status": 200
+    },
+    "series-today-empty": {
+      "method": "GET",
+      "path": "/api/series?site=newsite.dev&period=today&interval=hour&compare=previous",
+      "token": "read",
+      "status": 200
+    },
+    "series-7d-baseline": {
+      "method": "GET",
+      "path": "/api/series?site=dailyphototips.com&period=7d&interval=hour&compare=off",
+      "token": "read",
+      "status": 200
+    },
+    "goals-today": {
+      "method": "GET",
+      "path": "/api/goals?site=dailyphototips.com&period=today",
+      "token": "read",
+      "status": 200
+    },
+    "goals-30d": {
+      "method": "GET",
+      "path": "/api/goals?site=dailyphototips.com&period=30d",
+      "token": "read",
+      "status": 200
+    },
+    "goals-empty": {
+      "method": "GET",
+      "path": "/api/goals?site=newsite.dev&period=today",
+      "token": "read",
+      "status": 200
+    },
+    "goals-definitions": {
+      "method": "GET",
+      "path": "/api/goals?site=dailyphototips.com&definitions=1",
+      "token": "read",
+      "status": 200
+    },
+    "realtime": {
+      "method": "GET",
+      "path": "/api/realtime?site=dailyphototips.com",
+      "token": "read",
+      "status": 200
+    },
+    "realtime-empty": {
+      "method": "GET",
+      "path": "/api/realtime?site=newsite.dev",
+      "token": "read",
+      "status": 200
+    },
+    "breakdown-page": {
+      "method": "GET",
+      "path": "/api/breakdown?site=dailyphototips.com&period=today&dimension=page&limit=5",
+      "token": "read",
+      "status": 200
+    },
+    "breakdown-source": {
+      "method": "GET",
+      "path": "/api/breakdown?site=dailyphototips.com&period=today&dimension=source&limit=5",
+      "token": "read",
+      "status": 200
+    },
+    "breakdown-source-50": {
+      "method": "GET",
+      "path": "/api/breakdown?site=dailyphototips.com&period=today&dimension=source&limit=50",
+      "token": "read",
+      "status": 200
+    },
+    "links": {
+      "method": "GET",
+      "path": "/api/links?site=dailyphototips.com&period=30d",
+      "token": "read",
+      "status": 200
+    },
+    "link": {
+      "method": "GET",
+      "path": "/api/links/b8f9f51c270fa89a4eb457fd?site=dailyphototips.com&period=30d",
+      "token": "read",
+      "status": 200
+    },
+    "goal-create": {
+      "method": "POST",
+      "path": "/api/goals?site=dailyphototips.com",
+      "token": "manage",
+      "status": 201
+    },
+    "goal-update": {
+      "method": "PATCH",
+      "path": "/api/goals/1b89fba525bd502a90636ab7?site=dailyphototips.com",
+      "token": "manage",
+      "status": 200
+    },
+    "goal-delete": {
+      "method": "DELETE",
+      "path": "/api/goals/1b89fba525bd502a90636ab7?site=dailyphototips.com",
+      "token": "manage",
+      "status": 200
+    },
+    "link-create": {
+      "method": "POST",
+      "path": "/api/links?site=dailyphototips.com",
+      "token": "manage",
+      "status": 201
+    },
+    "link-update": {
+      "method": "PATCH",
+      "path": "/api/links/e8e17cf4bb10cca98c07caa8?site=dailyphototips.com",
+      "token": "manage",
+      "status": 200
+    },
+    "link-delete": {
+      "method": "DELETE",
+      "path": "/api/links/e8e17cf4bb10cca98c07caa8?site=dailyphototips.com",
+      "token": "manage",
+      "status": 200
+    },
+    "site-update": {
+      "method": "PATCH",
+      "path": "/api/sites/dailyphototips.com",
+      "token": "manage",
+      "status": 200
+    },
+    "error-unauthorized": {
+      "method": "GET",
+      "path": "/api/sites",
+      "token": "wrong",
+      "status": 401
+    },
+    "error-token-read-only": {
+      "method": "POST",
+      "path": "/api/goals?site=dailyphototips.com",
+      "token": "read",
+      "status": 403
+    },
+    "error-token-manage-only": {
+      "method": "PATCH",
+      "path": "/api/sites/joncphillips.com",
+      "token": "manage",
+      "status": 404
+    },
+    "error-unknown-site": {
+      "method": "GET",
+      "path": "/api/stats?site=nosuchsite&period=today",
+      "token": "read",
+      "status": 404
+    },
+    "error-unknown-goal": {
+      "method": "DELETE",
+      "path": "/api/goals/nosuchgoal?site=dailyphototips.com",
+      "token": "manage",
+      "status": 404
+    },
+    "error-link-taken": {
+      "method": "POST",
+      "path": "/api/links?site=dailyphototips.com",
+      "token": "manage",
+      "status": 400
+    },
+    "error-goal-name": {
+      "method": "POST",
+      "path": "/api/goals?site=dailyphototips.com",
+      "token": "manage",
+      "status": 400
+    },
+    "error-goal-page": {
+      "method": "POST",
+      "path": "/api/goals?site=dailyphototips.com",
+      "token": "manage",
+      "status": 400
+    },
+    "error-link-url": {
+      "method": "POST",
+      "path": "/api/links?site=dailyphototips.com",
+      "token": "manage",
+      "status": 400
+    },
+    "error-retention": {
+      "method": "PATCH",
+      "path": "/api/sites/dailyphototips.com",
+      "token": "manage",
+      "status": 400
+    },
+    "error-timezone": {
+      "method": "PATCH",
+      "path": "/api/sites/dailyphototips.com",
+      "token": "manage",
+      "status": 400
+    },
+    "error-send-json": {
+      "method": "POST",
+      "path": "/api/goals?site=dailyphototips.com",
+      "token": "manage",
+      "status": 415
+    }
+  }
+}

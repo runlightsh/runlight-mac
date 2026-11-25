@@ -1,0 +1,15 @@
+{
+  "goal": {
+    "id": "1b89fba525bd502a90636ab7",
+    "site": "dailyphototips.com",
+    "name": "Download preset",
+    "kind": "event",
+    "match": "Download",
+    "clickBy": "",
+    "valueMode": "none",
+    "value": 0,
+    "valueProp": "",
+    "currency": "USD",
+    "createdAt": 1795638600000
+  }
+}

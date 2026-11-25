@@ -1,0 +1,295 @@
+{
+  "visitors": 52,
+  "pages": [
+    {
+      "value": "/",
+      "visitors": 21
+    },
+    {
+      "value": "/tips/golden-hour",
+      "visitors": 9
+    },
+    {
+      "value": "/tips/long-exposure",
+      "visitors": 6
+    },
+    {
+      "value": "/tips/milky-way",
+      "visitors": 6
+    },
+    {
+      "value": "/tools/depth-of-field",
+      "visitors": 5
+    },
+    {
+      "value": "/thanks",
+      "visitors": 3
+    },
+    {
+      "value": "/newsletter",
+      "visitors": 2
+    }
+  ],
+  "sources": [
+    {
+      "value": "photzy.com",
+      "visitors": 35
+    },
+    {
+      "value": "",
+      "visitors": 5
+    },
+    {
+      "value": "Google",
+      "visitors": 1
+    },
+    {
+      "value": "Hacker News",
+      "visitors": 1
+    },
+    {
+      "value": "Pinterest",
+      "visitors": 1
+    }
+  ],
+  "countries": [
+    {
+      "value": "CA",
+      "visitors": 43
+    }
+  ],
+  "minutes": [
+    9,
+    5,
+    6,
+    11,
+    5,
+    14,
+    11,
+    15,
+    11,
+    10,
+    14,
+    12,
+    12,
+    16,
+    9,
+    13,
+    10,
+    9,
+    7,
+    10,
+    10,
+    10,
+    15,
+    16,
+    12,
+    9,
+    13,
+    10,
+    9,
+    0
+  ],
+  "recent": [
+    {
+      "ts": 1795638568057,
+      "kind": "event",
+      "path": "/thanks",
+      "name": "Signup",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638566557,
+      "kind": "pageview",
+      "path": "/thanks",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638564602,
+      "kind": "pageview",
+      "path": "/tips/golden-hour",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638562492,
+      "kind": "pageview",
+      "path": "/",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638562208,
+      "kind": "pageview",
+      "path": "/newsletter",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "Google",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638559711,
+      "kind": "pageview",
+      "path": "/tools/depth-of-field",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638558615,
+      "kind": "pageview",
+      "path": "/tips/golden-hour",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638551936,
+      "kind": "pageview",
+      "path": "/tips/milky-way",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638551446,
+      "kind": "pageview",
+      "path": "/",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "Google",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638542185,
+      "kind": "pageview",
+      "path": "/tips/golden-hour",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638533620,
+      "kind": "pageview",
+      "path": "/tips/milky-way",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638528139,
+      "kind": "event",
+      "path": "/thanks",
+      "name": "Signup",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638526639,
+      "kind": "pageview",
+      "path": "/thanks",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638518056,
+      "kind": "pageview",
+      "path": "/",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638508990,
+      "kind": "pageview",
+      "path": "/tips/golden-hour",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638506843,
+      "kind": "pageview",
+      "path": "/",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638502101,
+      "kind": "pageview",
+      "path": "/tips/milky-way",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "Google",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638501048,
+      "kind": "pageview",
+      "path": "/",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638500040,
+      "kind": "pageview",
+      "path": "/tips/golden-hour",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    },
+    {
+      "ts": 1795638498222,
+      "kind": "pageview",
+      "path": "/tools/depth-of-field",
+      "name": "",
+      "country": "CA",
+      "city": "Toronto",
+      "source": "photzy.com",
+      "device": "desktop"
+    }
+  ]
+}

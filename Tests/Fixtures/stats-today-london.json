@@ -1,0 +1,29 @@
+{
+  "site": "tulvane.com",
+  "range": {
+    "from": "2026-11-25",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "Europe/London"
+  },
+  "compare": {
+    "from": "2026-11-24",
+    "to": "2026-11-24"
+  },
+  "stats": {
+    "visitors": 41,
+    "visits": 41,
+    "pageviews": 55,
+    "viewsPerVisit": 1.34,
+    "bounceRate": 0.4146341463414634,
+    "visitDuration": 59025
+  },
+  "previous": {
+    "visitors": 38,
+    "visits": 38,
+    "pageviews": 54,
+    "viewsPerVisit": 1.42,
+    "bounceRate": 0.21052631578947367,
+    "visitDuration": 82618
+  }
+}

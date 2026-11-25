@@ -1,0 +1,7 @@
+{
+  "name": "runlight",
+  "version": "0.5.3",
+  "api": 1,
+  "library": "@runlight/sdk",
+  "language": "typescript"
+}

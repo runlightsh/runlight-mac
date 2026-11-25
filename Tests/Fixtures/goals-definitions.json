@@ -1,0 +1,44 @@
+{
+  "site": "dailyphototips.com",
+  "goals": [
+    {
+      "id": "0d679e9cac53bc1b4fba368a",
+      "site": "dailyphototips.com",
+      "name": "Thanks page",
+      "kind": "page",
+      "match": "/thanks*",
+      "clickBy": "",
+      "valueMode": "none",
+      "value": 0,
+      "valueProp": "",
+      "currency": "USD",
+      "createdAt": 1795638600000
+    },
+    {
+      "id": "2bd64c56b6dc7d0a5bcdb585",
+      "site": "dailyphototips.com",
+      "name": "Buy button",
+      "kind": "click",
+      "match": "#buy",
+      "clickBy": "selector",
+      "valueMode": "none",
+      "value": 0,
+      "valueProp": "",
+      "currency": "USD",
+      "createdAt": 1795638600000
+    },
+    {
+      "id": "f082ee5d46ebb6c914fb0dfa",
+      "site": "dailyphototips.com",
+      "name": "Newsletter signup",
+      "kind": "event",
+      "match": "Signup",
+      "clickBy": "",
+      "valueMode": "fixed",
+      "value": 2,
+      "valueProp": "",
+      "currency": "USD",
+      "createdAt": 1795638600000
+    }
+  ]
+}

@@ -1,0 +1,266 @@
+{
+  "link": {
+    "id": "b8f9f51c270fa89a4eb457fd",
+    "site": "dailyphototips.com",
+    "domain": "",
+    "slug": "yt",
+    "name": "YouTube bio",
+    "url": "https://dailyphototips.com/newsletter?utm_source=youtube",
+    "createdAt": 1795638600000,
+    "updatedAt": 1795638600000
+  },
+  "range": {
+    "from": "2026-10-27",
+    "to": "2026-11-25",
+    "interval": "day",
+    "timezone": "America/Toronto"
+  },
+  "clicks": 178,
+  "series": [
+    {
+      "start": 1793073600000,
+      "clicks": 5,
+      "visitors": 5
+    },
+    {
+      "start": 1793160000000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1793246400000,
+      "clicks": 2,
+      "visitors": 2
+    },
+    {
+      "start": 1793332800000,
+      "clicks": 5,
+      "visitors": 5
+    },
+    {
+      "start": 1793419200000,
+      "clicks": 4,
+      "visitors": 4
+    },
+    {
+      "start": 1793505600000,
+      "clicks": 5,
+      "visitors": 5
+    },
+    {
+      "start": 1793595600000,
+      "clicks": 2,
+      "visitors": 2
+    },
+    {
+      "start": 1793682000000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1793768400000,
+      "clicks": 6,
+      "visitors": 6
+    },
+    {
+      "start": 1793854800000,
+      "clicks": 6,
+      "visitors": 6
+    },
+    {
+      "start": 1793941200000,
+      "clicks": 4,
+      "visitors": 4
+    },
+    {
+      "start": 1794027600000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1794114000000,
+      "clicks": 4,
+      "visitors": 4
+    },
+    {
+      "start": 1794200400000,
+      "clicks": 6,
+      "visitors": 6
+    },
+    {
+      "start": 1794286800000,
+      "clicks": 2,
+      "visitors": 2
+    },
+    {
+      "start": 1794373200000,
+      "clicks": 7,
+      "visitors": 7
+    },
+    {
+      "start": 1794459600000,
+      "clicks": 9,
+      "visitors": 9
+    },
+    {
+      "start": 1794546000000,
+      "clicks": 7,
+      "visitors": 7
+    },
+    {
+      "start": 1794632400000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1794718800000,
+      "clicks": 3,
+      "visitors": 3
+    },
+    {
+      "start": 1794805200000,
+      "clicks": 4,
+      "visitors": 4
+    },
+    {
+      "start": 1794891600000,
+      "clicks": 5,
+      "visitors": 5
+    },
+    {
+      "start": 1794978000000,
+      "clicks": 10,
+      "visitors": 10
+    },
+    {
+      "start": 1795064400000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1795150800000,
+      "clicks": 9,
+      "visitors": 9
+    },
+    {
+      "start": 1795237200000,
+      "clicks": 6,
+      "visitors": 6
+    },
+    {
+      "start": 1795323600000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1795410000000,
+      "clicks": 8,
+      "visitors": 8
+    },
+    {
+      "start": 1795496400000,
+      "clicks": 6,
+      "visitors": 6
+    },
+    {
+      "start": 1795582800000,
+      "clicks": 5,
+      "visitors": 5
+    }
+  ],
+  "sources": [
+    {
+      "value": "Google",
+      "visitors": 74,
+      "events": 74
+    },
+    {
+      "value": "Pinterest",
+      "visitors": 13,
+      "events": 13
+    },
+    {
+      "value": "ChatGPT",
+      "visitors": 11,
+      "events": 11
+    },
+    {
+      "value": "Reddit",
+      "visitors": 9,
+      "events": 9
+    },
+    {
+      "value": "Hacker News",
+      "visitors": 6,
+      "events": 6
+    },
+    {
+      "value": "Bing",
+      "visitors": 4,
+      "events": 4
+    },
+    {
+      "value": "DuckDuckGo",
+      "visitors": 3,
+      "events": 3
+    }
+  ],
+  "referrers": [
+    {
+      "value": "google.com",
+      "visitors": 74,
+      "events": 74
+    },
+    {
+      "value": "pinterest.com",
+      "visitors": 13,
+      "events": 13
+    },
+    {
+      "value": "chatgpt.com",
+      "visitors": 11,
+      "events": 11
+    },
+    {
+      "value": "reddit.com",
+      "visitors": 9,
+      "events": 9
+    },
+    {
+      "value": "news.ycombinator.com",
+      "visitors": 6,
+      "events": 6
+    },
+    {
+      "value": "bing.com",
+      "visitors": 4,
+      "events": 4
+    },
+    {
+      "value": "duckduckgo.com",
+      "visitors": 3,
+      "events": 3
+    }
+  ],
+  "countries": [
+    {
+      "value": "US",
+      "visitors": 178,
+      "events": 178
+    }
+  ],
+  "devices": [
+    {
+      "value": "mobile",
+      "visitors": 178,
+      "events": 178
+    }
+  ],
+  "browsers": [
+    {
+      "value": "Chrome",
+      "visitors": 178,
+      "events": 178
+    }
+  ]
+}

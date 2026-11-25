@@ -1,0 +1,4 @@
+{
+  "error": "API tokens can only read",
+  "code": "token_read_only"
+}

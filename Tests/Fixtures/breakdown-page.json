@@ -1,0 +1,47 @@
+{
+  "site": "dailyphototips.com",
+  "range": {
+    "from": "2026-11-25",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "America/Toronto"
+  },
+  "dimension": "page",
+  "rows": [
+    {
+      "value": "/",
+      "visitors": 502,
+      "pageviews": 575,
+      "timeOnPage": 54387,
+      "scrollDepth": 60
+    },
+    {
+      "value": "/tips/golden-hour",
+      "visitors": 312,
+      "pageviews": 335,
+      "timeOnPage": 54112,
+      "scrollDepth": 60
+    },
+    {
+      "value": "/tips/long-exposure",
+      "visitors": 222,
+      "pageviews": 232,
+      "timeOnPage": 54907,
+      "scrollDepth": 60
+    },
+    {
+      "value": "/tools/depth-of-field",
+      "visitors": 215,
+      "pageviews": 231,
+      "timeOnPage": 54072,
+      "scrollDepth": 60
+    },
+    {
+      "value": "/tips/milky-way",
+      "visitors": 197,
+      "pageviews": 203,
+      "timeOnPage": 54342,
+      "scrollDepth": 60
+    }
+  ]
+}

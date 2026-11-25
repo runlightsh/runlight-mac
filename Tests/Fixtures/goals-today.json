@@ -1,0 +1,85 @@
+{
+  "site": "dailyphototips.com",
+  "range": {
+    "from": "2026-11-25",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "America/Toronto"
+  },
+  "compare": {
+    "from": "2026-11-24",
+    "to": "2026-11-24"
+  },
+  "visitors": 1273,
+  "goals": [
+    {
+      "id": "0d679e9cac53bc1b4fba368a",
+      "site": "dailyphototips.com",
+      "name": "Thanks page",
+      "kind": "page",
+      "match": "/thanks*",
+      "clickBy": "",
+      "valueMode": "none",
+      "value": 0,
+      "valueProp": "",
+      "currency": "USD",
+      "createdAt": 1795638600000,
+      "conversions": 94,
+      "visitors": 93,
+      "revenue": 0,
+      "rate": 0.07305577376276512,
+      "previous": {
+        "conversions": 60,
+        "visitors": 60,
+        "revenue": 0,
+        "rate": 0.07416563658838071
+      }
+    },
+    {
+      "id": "2bd64c56b6dc7d0a5bcdb585",
+      "site": "dailyphototips.com",
+      "name": "Buy button",
+      "kind": "click",
+      "match": "#buy",
+      "clickBy": "selector",
+      "valueMode": "none",
+      "value": 0,
+      "valueProp": "",
+      "currency": "USD",
+      "createdAt": 1795638600000,
+      "conversions": 0,
+      "visitors": 0,
+      "revenue": 0,
+      "rate": 0,
+      "previous": {
+        "conversions": 0,
+        "visitors": 0,
+        "revenue": 0,
+        "rate": 0
+      }
+    },
+    {
+      "id": "f082ee5d46ebb6c914fb0dfa",
+      "site": "dailyphototips.com",
+      "name": "Newsletter signup",
+      "kind": "event",
+      "match": "Signup",
+      "clickBy": "",
+      "valueMode": "fixed",
+      "value": 2,
+      "valueProp": "",
+      "currency": "USD",
+      "createdAt": 1795638600000,
+      "conversions": 49,
+      "visitors": 49,
+      "revenue": 98,
+      "rate": 0.0384917517674784,
+      "previous": {
+        "conversions": 27,
+        "visitors": 27,
+        "revenue": 54,
+        "rate": 0.03337453646477132
+      }
+    }
+  ]
+}

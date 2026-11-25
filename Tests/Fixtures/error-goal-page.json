@@ -1,0 +1,5 @@
+{
+  "error": "Enter a page path, like /thanks or /blog/*",
+  "code": "goal_page",
+  "params": {}
+}

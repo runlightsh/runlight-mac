@@ -1,0 +1,449 @@
+{
+  "site": "newsite.dev",
+  "range": {
+    "from": "2026-11-25",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "America/Los_Angeles"
+  },
+  "compare": {
+    "from": "2026-11-24",
+    "to": "2026-11-24"
+  },
+  "points": [
+    {
+      "start": 1795593600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795597200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795600800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795604400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795608000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795611600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795615200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795618800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795622400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795626000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795629600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795633200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795636800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795640400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795644000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795647600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795651200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795654800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795658400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795662000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795665600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795669200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795672800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795676400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    }
+  ],
+  "previous": [
+    {
+      "start": 1795507200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795510800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795514400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795518000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795521600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795525200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795528800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795532400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795536000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795539600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795543200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795546800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795550400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795554000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795557600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795561200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795564800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795568400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795572000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795575600000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795579200000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795582800000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795586400000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    },
+    {
+      "start": 1795590000000,
+      "visitors": 0,
+      "visits": 0,
+      "pageviews": 0,
+      "viewsPerVisit": 0,
+      "bounceRate": 0,
+      "visitDuration": 0
+    }
+  ]
+}

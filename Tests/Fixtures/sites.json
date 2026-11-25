@@ -1,0 +1,45 @@
+{
+  "sites": [
+    {
+      "id": "dailyphototips.com",
+      "name": "DailyPhotoTips",
+      "hostnames": [
+        "dailyphototips.com"
+      ],
+      "timezone": "America/Toronto",
+      "lastSeen": 1795638568057,
+      "retentionMonths": null
+    },
+    {
+      "id": "joncphillips.com",
+      "name": "joncphillips.com",
+      "hostnames": [
+        "joncphillips.com"
+      ],
+      "timezone": "America/Toronto",
+      "lastSeen": 1795638542578,
+      "retentionMonths": null
+    },
+    {
+      "id": "newsite.dev",
+      "name": "newsite.dev",
+      "hostnames": [
+        "newsite.dev"
+      ],
+      "timezone": "America/Los_Angeles",
+      "lastSeen": null,
+      "retentionMonths": null
+    },
+    {
+      "id": "tulvane.com",
+      "name": "Tulvane",
+      "hostnames": [
+        "tulvane.com"
+      ],
+      "timezone": "Europe/London",
+      "lastSeen": 1795638562046,
+      "retentionMonths": null
+    }
+  ],
+  "managed": true
+}

@@ -1,0 +1,10 @@
+{
+  "site": {
+    "id": "dailyphototips.com",
+    "name": "Daily Photo Tips",
+    "hostnames": [
+      "dailyphototips.com"
+    ],
+    "timezone": "America/New_York"
+  }
+}

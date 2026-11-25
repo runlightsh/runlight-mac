@@ -1,0 +1,15 @@
+{
+  "site": "newsite.dev",
+  "range": {
+    "from": "2026-11-25",
+    "to": "2026-11-25",
+    "interval": "hour",
+    "timezone": "America/Los_Angeles"
+  },
+  "compare": {
+    "from": "2026-11-24",
+    "to": "2026-11-24"
+  },
+  "visitors": 0,
+  "goals": []
+}
