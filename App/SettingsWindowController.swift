@@ -35,12 +35,12 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private let tabs = NSTabViewController()
 
     /// `open` takes the links Settings follows: a dashboard's go to its window, anything else to the browser.
-    init(model: AppModel, open: @escaping @MainActor @Sendable (URL) -> Void = { NSWorkspace.shared.open($0) }) {
+    init(model: AppModel, updates: Updates = Updates(updater: nil), open: @escaping @MainActor @Sendable (URL) -> Void = { NSWorkspace.shared.open($0) }) {
         tabs.tabStyle = .toolbar
         tabs.transitionOptions = [.allowUserInteraction]
         tabs.canPropagateSelectedChildViewControllerTitle = true
         for tab in SettingsTab.allCases {
-            let controller = NSHostingController(rootView: AnyView(Self.view(for: tab).environment(model).environment(\.openURL, OpenURLAction { url in
+            let controller = NSHostingController(rootView: AnyView(Self.view(for: tab).environment(model).environment(updates).environment(\.openURL, OpenURLAction { url in
                 open(url)
                 return .handled
             })))

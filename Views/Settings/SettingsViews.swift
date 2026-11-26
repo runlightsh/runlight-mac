@@ -7,6 +7,7 @@ enum SettingsLayout {
 
 struct GeneralSettingsView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Updates.self) private var updates
     @State private var launchAtLogin = LaunchAtLogin()
     @AppStorage(AppAppearance.defaultsKey) private var appearance = AppAppearance.system
 
@@ -70,7 +71,17 @@ struct GeneralSettingsView: View {
                 }
             }
             Section {
-                LabeledContent("Version", value: Bundle.main.versionDescription)
+                @Bindable var updates = updates
+                Toggle(isOn: $updates.checksAutomatically) {
+                    Text("Check for updates automatically")
+                    Text(updates.lastChecked.map { "Last checked \($0.formatted(date: .abbreviated, time: .shortened))." } ?? "Updates come from runlight.sh, signed so only Runlight's own install.")
+                }
+                LabeledContent("Version") {
+                    HStack(spacing: Theme.Space.s) {
+                        Text(Bundle.main.versionDescription).foregroundStyle(.secondary)
+                        Button("Check Now") { updates.checkNow() }
+                    }
+                }
             }
         }
         .formStyle(.grouped)

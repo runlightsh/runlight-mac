@@ -1,4 +1,5 @@
 import AppKit
+import Sparkle
 
 /// The menu bar shown while the Settings window is open. It also carries the Edit menu, which is
 /// what makes Command-C, Command-V and friends work in text fields.
@@ -9,6 +10,7 @@ enum MainMenu {
 
         let app = NSMenu(title: "Runlight")
         app.addItem(withTitle: "About Runlight", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        app.addItem(withTitle: "Check for Updates…", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "").target = target.updater
         app.addItem(.separator())
         app.addItem(withTitle: "Settings…", action: #selector(AppDelegate.openSettingsFromMenu), keyEquivalent: ",").target = target
         app.addItem(.separator())

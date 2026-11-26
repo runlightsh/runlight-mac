@@ -1,4 +1,5 @@
 import AppKit
+import Sparkle
 import SwiftUI
 import UserNotifications
 
@@ -7,8 +8,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: PopoverController?
     private let model = AppModel()
-    private lazy var settings = SettingsWindowController(model: model) { [weak self] url in self?.openDashboard(url) }
+    private lazy var settings = SettingsWindowController(model: model, updates: Updates(updater: updater.updater)) { [weak self] url in self?.openDashboard(url) }
     private lazy var dashboards = DashboardWindows(model: model)
+    /// Updates, from the feed on runlight.sh. Not started while tests run.
+    lazy var updater = SPUStandardUpdaterController(startingUpdater: !isRunningTests, updaterDelegate: nil, userDriverDelegate: nil)
 
     /// Unit tests load the app as their host; they get no menu bar item.
     private var isRunningTests: Bool {
@@ -37,6 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.startPolling()
         model.connectionRemoved = { [weak self] id in self?.dashboards.close(id) }
         UNUserNotificationCenter.current().delegate = self
+        _ = updater
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.autosaveName = "Runlight"
@@ -101,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if !model.connections.isEmpty { menu.addItem(.separator()) }
         menu.addItem(withTitle: "Settings…", action: #selector(openSettingsFromMenu), keyEquivalent: ",").target = self
+        menu.addItem(withTitle: "Check for Updates…", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "").target = updater
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Runlight", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.menu = menu

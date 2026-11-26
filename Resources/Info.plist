@@ -33,5 +33,11 @@
 	</dict>
 	<key>NSHumanReadableCopyright</key>
 	<string>Runlight is open source.</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://runlight.sh/mac/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>pK932sHfOShVuXul3is8eTaWQWTVC9LhkAhEK5YHmkU=</string>
 </dict>
 </plist>
