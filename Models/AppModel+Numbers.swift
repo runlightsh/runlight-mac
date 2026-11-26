@@ -17,6 +17,10 @@ enum Job: Hashable, Sendable {
     case realtime(SiteKey)
     /// Top pages and sources for the open site and period.
     case breakdown(SiteKey, Period)
+    /// The last 30 days by the hour and their goals, for spike alerts.
+    case baseline(SiteKey)
+    /// Today's sources, counted every few minutes to name what sent a spike.
+    case sources(SiteKey)
 
     /// Fetched for the open site only.
     var isDetail: Bool {
@@ -28,7 +32,8 @@ enum Job: Hashable, Sendable {
 
     var connection: UUID {
         switch self {
-        case .stats(let key, _), .series(let key, _), .goals(let key, _), .icon(let key), .realtime(let key), .breakdown(let key, _): key.connection
+        case .stats(let key, _), .series(let key, _), .goals(let key, _), .icon(let key), .realtime(let key), .breakdown(let key, _),
+             .baseline(let key), .sources(let key): key.connection
         case .sites(let id): id
         }
     }
@@ -108,9 +113,18 @@ extension AppModel {
             case .series(let key, let period):
                 let series = try await client.series(site: key.site, period: period, interval: Numbers.interval(for: period), compare: "previous")
                 keep(key, period) { $0.series = series; $0.seriesAt = now() }
+                if period == .today { await checkSpikes(key) }
             case .goals(let key, let period):
                 let goals = try await client.goals(site: key.site, period: period)
                 keep(key, period) { $0.goals = goals; $0.goalsAt = now() }
+                if period == .today { keepGoals(key, goals) }
+            case .baseline(let key):
+                let month = try await client.series(site: key.site, period: .thirtyDays, interval: "hour", compare: "off")
+                let goals = try await client.goals(site: key.site, period: .thirtyDays)
+                baselines[key] = Baseline(month: month, goals: goals, at: now())
+                await checkSpikes(key)
+            case .sources(let key):
+                keepSources(key, try await client.breakdown(site: key.site, period: .today, dimension: .source, limit: 50))
             case .icon(let key):
                 let data = try await client.icon(site: key.site) ?? Data()
                 icons[key] = IconEntry(data: data, checkedAt: now())
@@ -164,7 +178,7 @@ extension AppModel {
         case .icon(let key):
             // No icon is an answer too; try again in a week.
             icons[key] = IconEntry(data: Data(), checkedAt: now())
-        case .sites, .realtime, .breakdown:
+        case .sites, .realtime, .breakdown, .baseline, .sources:
             // The detail keeps what it last had; the next round tries again.
             break
         }
@@ -241,6 +255,7 @@ extension AppModel {
     /// The popover opened: anything older than a minute is fetched now, so it's fresh within seconds.
     func popoverOpened() {
         setPopoverVisible(true)
+        spikeLit = false
         poller?.refresh(olderThan: 60)
     }
 

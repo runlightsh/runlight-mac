@@ -22,6 +22,9 @@ final class Poller {
         /// While a site is open.
         var realtime: TimeInterval = 15
         var breakdown: TimeInterval = 120
+        /// For spike alerts, while they're on.
+        var baseline: TimeInterval = 3600
+        var sources: TimeInterval = 300
     }
 
     var intervals = Intervals()
@@ -95,6 +98,10 @@ final class Poller {
                 // A switched-off site keeps its icon for Settings but fetches no numbers.
                 want(.icon(key), last: model.icons[key]?.checkedAt, every: intervals.icon)
                 guard model.isShown(key) else { continue }
+                if model.alertsOn(key) {
+                    want(.baseline(key), last: model.baselines[key]?.at, every: intervals.baseline)
+                    want(.sources(key), last: model.sourceHistory[key]?.last?.at, every: intervals.sources)
+                }
                 for period in Period.allCases where periods.contains(period) {
                     let snapshot = model.snapshot(key, period)
                     want(.stats(key, period), last: snapshot?.statsAt, every: intervals.stats)
@@ -231,6 +238,8 @@ final class Poller {
         case .icon: intervals.icon
         case .realtime: intervals.realtime
         case .breakdown: intervals.breakdown
+        case .baseline: intervals.baseline
+        case .sources: intervals.sources
         }
         // A rejected token won't start working by itself; check back now and then.
         if model?.connections.first(where: { $0.id == job.connection })?.status == .tokenRejected {

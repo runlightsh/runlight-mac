@@ -38,7 +38,7 @@ struct SitesSettingsView: View {
                         }
                         .pickerStyle(.segmented)
                     } footer: {
-                        Text("Drag a site by its handle to reorder.")
+                        Text("Drag a site to reorder it.")
                             .font(.system(size: 11))
                             .foregroundStyle(.tertiary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -61,6 +61,11 @@ struct SitesSettingsView: View {
                     }
                 }
                 .formStyle(.grouped)
+                .onContinuousHover { _ in
+                    if model.draggingSite != nil && NSEvent.pressedMouseButtons == 0 {
+                        withAnimation(Theme.Motion.hover) { model.draggingSite = nil }
+                    }
+                }
             }
         }
         .frame(width: SettingsLayout.paneSize.width, height: SettingsLayout.paneSize.height)
@@ -79,14 +84,13 @@ private struct SiteSettingsRow: View {
     let site: Site
 
     @Environment(AppModel.self) private var model
-    @State private var targeted = false
     @State private var handleHovered = false
 
     var body: some View {
         let shown = model.isShown(key)
+        let dragging = model.draggingSite == key
         HStack(spacing: Theme.Space.m - 2) {
-            Image(systemName: "line.3.horizontal")
-                .font(.system(size: 11, weight: .semibold))
+            GripDots()
                 .foregroundStyle(handleHovered ? .secondary : .tertiary)
                 .frame(width: 14, height: 24)
                 .contentShape(Rectangle())
@@ -94,59 +98,56 @@ private struct SiteSettingsRow: View {
                     handleHovered = inside
                     if inside { NSCursor.openHand.push() } else { NSCursor.pop() }
                 }
-                .draggable(key.storageKey) {
-                    // What follows the pointer: the site's icon and name on a small card.
-                    HStack(spacing: Theme.Space.s) {
-                        SiteIcon(key: key, site: site, size: 18)
-                        Text(site.name).font(.system(size: 12, weight: .medium))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.regularMaterial))
-                    .environment(model)
-                }
                 .help("Drag to reorder")
                 .accessibilityHidden(true)
-            SiteIcon(key: key, site: site, size: 24)
-                .saturation(shown ? 1 : 0)
-                .opacity(shown ? 1 : 0.5)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(site.name)
-                    .font(.system(size: 13))
-                Text(site.hostnames.first ?? site.id)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-            }
-            .opacity(shown ? 1 : 0.55)
-            Spacer()
-            Text(Self.cityName(site.timezone))
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-                .help(site.timezone)
-            Toggle("Show \(site.name)", isOn: Binding(get: { shown }, set: { model.setShown(key, $0) }))
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .labelsHidden()
-                .help(shown ? "Shown in the menu bar popover" : "Hidden from the menu bar popover")
+            content(shown: shown)
         }
         .padding(.vertical, 1)
         .animation(Theme.Motion.hover, value: shown)
-        .overlay(alignment: .top) {
-            // Where the dragged site will land.
-            Capsule()
-                .fill(Theme.lamp)
-                .frame(height: 2)
-                .offset(y: -5)
-                .opacity(targeted ? 1 : 0)
-                .animation(Theme.Motion.hover, value: targeted)
+        // The row being dragged stays as a faint placeholder; the others slide around it.
+        .opacity(dragging ? 0.3 : 1)
+        .contentShape(Rectangle())
+        .onDrag {
+            model.draggingSite = key
+            return NSItemProvider(object: key.storageKey as NSString)
+        } preview: {
+            HStack(spacing: Theme.Space.m - 2) {
+                GripDots().foregroundStyle(.secondary).frame(width: 14)
+                content(shown: shown)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(width: SettingsLayout.paneSize.width - 60)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.background))
+            .environment(model)
         }
-        .dropDestination(for: String.self) { items, _ in
-            guard let moving = items.first.flatMap(SiteKey.init(storageKey:)), moving.connection == key.connection else { return false }
-            withAnimation(Theme.Motion.push) { model.moveSite(moving, to: key) }
-            return true
-        } isTargeted: { targeted = $0 }
+        .onDrop(of: [.text], delegate: ReorderDrop(target: key, model: model))
         .accessibilityAction(named: "Move up") { move(by: -1) }
         .accessibilityAction(named: "Move down") { move(by: 1) }
+    }
+
+    @ViewBuilder private func content(shown: Bool) -> some View {
+        SiteIcon(key: key, site: site, size: 24)
+            .saturation(shown ? 1 : 0)
+            .opacity(shown ? 1 : 0.5)
+        VStack(alignment: .leading, spacing: 1) {
+            Text(site.name)
+                .font(.system(size: 13))
+            Text(site.hostnames.first ?? site.id)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
+        .opacity(shown ? 1 : 0.55)
+        Spacer()
+        Text(Self.cityName(site.timezone))
+            .font(.system(size: 11))
+            .foregroundStyle(.tertiary)
+            .help(site.timezone)
+        Toggle("Show \(site.name)", isOn: Binding(get: { shown }, set: { model.setShown(key, $0) }))
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .labelsHidden()
+            .help(shown ? "Shown in the menu bar popover" : "Hidden from the menu bar popover")
     }
 
     /// For VoiceOver and keyboard users, who can't drag: one place up or down.
@@ -160,5 +161,49 @@ private struct SiteSettingsRow: View {
     /// "America/Toronto" reads as "Toronto".
     static func cityName(_ timezone: String) -> String {
         (timezone.split(separator: "/").last.map(String.init) ?? timezone).replacingOccurrences(of: "_", with: " ")
+    }
+}
+
+/// Moves the dragged site into a row's place as soon as the pointer enters it, so the list
+/// rearranges under the drag rather than marking where it would land.
+private struct ReorderDrop: DropDelegate {
+    let target: SiteKey
+    let model: AppModel
+
+    func dropEntered(info: DropInfo) {
+        MainActor.assumeIsolated {
+            guard let moving = model.draggingSite, moving != target, moving.connection == target.connection else { return }
+            withAnimation(Theme.Motion.push) { model.moveSite(moving, to: target) }
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        MainActor.assumeIsolated {
+            withAnimation(Theme.Motion.hover) { model.draggingSite = nil }
+        }
+        return true
+    }
+}
+
+/// A grip of six dots, two across and three down.
+private struct GripDots: View {
+    var body: some View {
+        Canvas { context, size in
+            let dot: CGFloat = 2.6
+            let gap: CGFloat = 2.4
+            let width = dot * 2 + gap
+            let height = dot * 3 + gap * 2
+            let origin = CGPoint(x: (size.width - width) / 2, y: (size.height - height) / 2)
+            for row in 0..<3 {
+                for column in 0..<2 {
+                    let rect = CGRect(x: origin.x + CGFloat(column) * (dot + gap), y: origin.y + CGFloat(row) * (dot + gap), width: dot, height: dot)
+                    context.fill(Path(ellipseIn: rect), with: .foreground)
+                }
+            }
+        }
     }
 }

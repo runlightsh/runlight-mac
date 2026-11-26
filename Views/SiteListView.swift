@@ -201,6 +201,17 @@ private struct SiteRow: View {
                         .font(.system(size: 11))
                         .foregroundStyle(failure.isConnectivity ? AnyShapeStyle(.secondary) : AnyShapeStyle(Theme.down))
                         .lineLimit(1)
+                } else if let spike = model.spikes[key] {
+                    HStack(spacing: 3) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 8, weight: .bold))
+                            .symbolEffect(.pulse, options: .repeat(3))
+                        Text("Spiking, \(spike.ratioText)")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundStyle(Theme.up)
+                    .help("\(spike.count) visitors in the last hour; usually about \(Int(spike.usual.rounded()))")
+                    .transition(.opacity)
                 } else if let live, live > 0 {
                     HStack(spacing: 4) {
                         LiveDot(live: true, size: 5)
@@ -273,6 +284,7 @@ private struct SiteRow: View {
     private func accessibilityText(_ summary: SiteSummary, failure: RunlightError?, quiet: Bool, live: Int?) -> String {
         if let failure { return "\(site.name), \(Self.problem(failure))" }
         if quiet { return "\(site.name), no visits yet today" }
+        if let spike = model.spikes[key] { return "\(site.name), spiking, \(spike.count) visitors in the last hour, \(spike.ratioText)" }
         let visitors = summary.visitors.map { "\($0) visitors" } ?? "loading"
         let now = live.map { "\($0) on the site now" } ?? ""
         return [site.name, visitors, NumberText.spokenChange(summary.change, period: model.period), now].filter { !$0.isEmpty }.joined(separator: ", ")

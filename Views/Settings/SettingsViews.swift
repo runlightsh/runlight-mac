@@ -58,36 +58,7 @@ struct GeneralSettingsView: View {
     }
 }
 
-struct AlertsSettingsView: View {
-    var body: some View {
-        PlaceholderPane(symbol: "bell.badge", title: "Spike alerts", detail: "Get a notification when a site's traffic jumps, naming the source that sent it.")
-    }
-}
 
-/// A calm empty pane: a large glyph and a line of explanation.
-private struct PlaceholderPane: View {
-    let symbol: String
-    let title: String
-    let detail: String
-
-    var body: some View {
-        VStack(spacing: Theme.Space.s) {
-            Image(systemName: symbol)
-                .font(.system(size: 30, weight: .light))
-                .foregroundStyle(.tertiary)
-                .padding(.bottom, Theme.Space.xs)
-            Text(title)
-                .font(.system(size: 13, weight: .semibold))
-            Text(detail)
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 320)
-        }
-        .padding(.bottom, Theme.Space.xxl)
-        .frame(width: SettingsLayout.paneSize.width, height: SettingsLayout.paneSize.height)
-    }
-}
 
 extension Bundle {
     /// "0.1.0 (1)"

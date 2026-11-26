@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UserNotifications
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -32,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover?.onHide = { model.popoverClosed() }
         popover?.onEscape = { withAnimation(Theme.Motion.push) { model.collapse() } }
         model.startPolling()
+        UNUserNotificationCenter.current().delegate = self
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.autosaveName = "Runlight"
@@ -100,6 +102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func followMenuBarNumber() {
         withObservationTracking {
             updateMenuBarNumber(model.showsMenuBarTotal ? model.totals.visitors : nil, period: model.period)
+            updateMenuBarLamp(model.spikeLit)
         } onChange: { [weak self] in
             DispatchQueue.main.async { self?.followMenuBarNumber() }
         }
@@ -119,8 +122,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ])
     }
 
+    /// The lamp lights green after a spike alert, until the popover is opened.
+    private func updateMenuBarLamp(_ lit: Bool) {
+        guard let button = statusItem?.button, (button.image?.isTemplate == lit) else { return }
+        button.image = MenuBarIcon.image(lit: lit, appearance: button.effectiveAppearance)
+    }
+
+    /// A spike alert was clicked: the popover opens on that site.
+    func showAlertedSite(_ storageKey: String) {
+        guard let key = SiteKey(storageKey: storageKey), let button = statusItem?.button else { return }
+        model.openFromAlert(key)
+        popover?.show(from: button)
+    }
+
     func openSettings(_ tab: SettingsTab?) {
         popover?.hide()
         settings.show(tab)
+    }
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    /// Alerts show even while Runlight's popover or Settings is open.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .sound]
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        guard let site = response.notification.request.content.userInfo[SystemNotifier.siteKey] as? String else { return }
+        await MainActor.run { self.showAlertedSite(site) }
     }
 }

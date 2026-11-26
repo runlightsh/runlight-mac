@@ -108,10 +108,36 @@ final class AppModel {
     var siteOrder: [SiteKey] = [] {
         didSet { defaults.set(siteOrder.map(\.storageKey), forKey: "siteOrder") }
     }
+    /// The site being dragged in Settings, shown as a placeholder while the others move around it.
+    var draggingSite: SiteKey?
     /// Whether the popover lists sites in that order rather than busiest first.
     var usesCustomOrder = false {
         didSet { defaults.set(usesCustomOrder, forKey: "customSiteOrder") }
     }
+    /// Spike alert settings, kept as one value.
+    var alertSettings = AlertSettings() {
+        didSet {
+            if let data = try? JSONEncoder().encode(alertSettings) { defaults.set(data, forKey: "alerts") }
+            if alertSettings.enabled != oldValue.enabled || alertSettings.mutedSites != oldValue.mutedSites { poller?.reconcile() }
+            if !alertSettings.enabled { spikes = [:] }
+        }
+    }
+    /// macOS said no when asked for notifications, so Settings shows where to allow them.
+    var notificationsRefused = false
+    /// What spike alerts are measured against, per site.
+    var baselines: [SiteKey: Baseline] = [:]
+    /// Today's sources and conversions per goal, counted every few minutes for the last two hours.
+    @ObservationIgnored var sourceHistory: [SiteKey: [Tally]] = [:]
+    @ObservationIgnored var goalHistory: [SiteKey: [Tally]] = [:]
+    /// Sites spiking now, for the badge on their rows.
+    var spikes: [SiteKey: Spike] = [:]
+    /// When each site last alerted, per kind, so one spike doesn't alert again for two hours.
+    @ObservationIgnored var lastAlerts: [String: Date] = [:] {
+        didSet { defaults.set(lastAlerts.mapValues(\.timeIntervalSince1970), forKey: "lastAlerts") }
+    }
+    /// The menu bar lamp lights after an alert, until the popover is opened.
+    var spikeLit = false
+    @ObservationIgnored var notifier: any Notifier = SystemNotifier()
     /// Whether the menu bar shows total site visits beside the icon, or the icon alone.
     var showsMenuBarTotal = true {
         didSet { defaults.set(showsMenuBarTotal, forKey: "menuBarTotal") }
@@ -166,6 +192,8 @@ final class AppModel {
         showsMenuBarTotal = defaults.object(forKey: "menuBarTotal") as? Bool ?? true
         siteOrder = (defaults.stringArray(forKey: "siteOrder") ?? []).compactMap(SiteKey.init(storageKey:))
         usesCustomOrder = defaults.bool(forKey: "customSiteOrder")
+        alertSettings = defaults.data(forKey: "alerts").flatMap { try? JSONDecoder().decode(AlertSettings.self, from: $0) } ?? AlertSettings()
+        lastAlerts = ((defaults.dictionary(forKey: "lastAlerts") as? [String: Double]) ?? [:]).mapValues(Date.init(timeIntervalSince1970:))
         hiddenSites = Set((defaults.stringArray(forKey: "hiddenSites") ?? []).compactMap(SiteKey.init(storageKey:)))
         self.vault = vault
         self.session = session
@@ -372,6 +400,8 @@ final class AppModel {
         if expandedSite?.connection == id { expandedSite = nil }
         hiddenSites = hiddenSites.filter { $0.connection != id }
         siteOrder = siteOrder.filter { $0.connection != id }
+        baselines = baselines.filter { $0.key.connection != id }
+        spikes = spikes.filter { $0.key.connection != id }
         persist()
         poller?.reconcile()
     }
