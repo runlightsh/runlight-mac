@@ -37,14 +37,28 @@ final class ManageWindowController: NSWindowController, NSWindowDelegate {
     init(manager: SiteManager, model: AppModel) {
         self.manager = manager
         selection = ManageSelection()
-        let hosting = NSHostingController(rootView: ManageView(manager: manager, selection: selection).environment(model))
-        hosting.sizingOptions = []
-        let window = NSWindow(contentViewController: hosting)
+        // AppKit's own split view, so the sidebar is the system's (floating glass on macOS 26).
+        let split = NSSplitViewController()
+        let sidebar = NSHostingController(rootView: ManageSidebar(manager: manager, selection: selection).environment(model))
+        sidebar.sizingOptions = []
+        let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebar)
+        sidebarItem.minimumThickness = 190
+        sidebarItem.maximumThickness = 260
+        sidebarItem.canCollapse = false
+        let detail = NSHostingController(rootView: ManageDetail(manager: manager, selection: selection).environment(model))
+        detail.sizingOptions = []
+        let detailItem = NSSplitViewItem(viewController: detail)
+        split.addSplitViewItem(sidebarItem)
+        split.addSplitViewItem(detailItem)
+
+        let window = NSWindow(contentViewController: split)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
-        window.setContentSize(NSSize(width: 820, height: 560))
-        window.minSize = NSSize(width: 680, height: 440)
+        window.setContentSize(NSSize(width: 860, height: 580))
+        window.minSize = NSSize(width: 700, height: 460)
         window.title = "Manage \(manager.site?.name ?? manager.key.site)"
         window.subtitle = manager.connectionName
+        window.titleVisibility = .visible
+        window.toolbar = NSToolbar(identifier: "Manage")
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
         window.tabbingMode = .disallowed

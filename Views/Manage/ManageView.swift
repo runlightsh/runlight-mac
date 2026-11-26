@@ -21,128 +21,175 @@ enum ManagePane: String, CaseIterable, Identifiable {
     }
 }
 
-/// A site's Manage window: Goals, Links, and Settings in a sidebar. Without a manage token it
-/// still shows everything, read-only, with one line saying why and a way to add one.
-struct ManageView: View {
+/// The right side of a site's Manage window: the pane chosen in the sidebar. Without a manage
+/// token it still shows everything, read-only, with one line saying why and a way to allow editing.
+struct ManageDetail: View {
     let manager: SiteManager
     @Bindable var selection: ManageSelection
 
-    @Environment(AppModel.self) private var model
     @State private var addingToken = false
 
     var body: some View {
-        HStack(spacing: 0) {
-            sidebar
-                .frame(width: 196)
-            Divider()
-            VStack(spacing: 0) {
-                if !manager.canEdit {
-                    ReadOnlyBanner(siteName: manager.site?.name ?? manager.key.site) { addingToken = true }
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                Group {
-                    switch selection.pane {
-                    case .goals: GoalsPane(manager: manager, needsToken: { addingToken = true })
-                    case .links: LinksPane(manager: manager, needsToken: { addingToken = true })
-                    case .settings: SiteSettingsPane(manager: manager, needsToken: { addingToken = true })
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        VStack(spacing: 0) {
+            if !manager.canEdit {
+                ReadOnlyBanner(key: manager.key, siteName: manager.site?.name ?? manager.key.site, connectionName: manager.connectionName) { addingToken = true }
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
-            .animation(Theme.Motion.push, value: manager.canEdit)
+            Group {
+                switch selection.pane {
+                case .goals: GoalsPane(manager: manager, needsToken: { addingToken = true })
+                case .links: LinksPane(manager: manager, needsToken: { addingToken = true })
+                case .settings: SiteSettingsPane(manager: manager, needsToken: { addingToken = true })
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(minWidth: 680, minHeight: 440)
+        .animation(Theme.Motion.push, value: manager.canEdit)
+        .frame(minWidth: 480, minHeight: 440)
         .sheet(isPresented: $addingToken) {
             ManageTokenSheet(key: manager.key, siteName: manager.site?.name ?? manager.key.site) { addingToken = false }
         }
     }
+}
 
-    /// The three panes, on the window's sidebar material, with the site at the foot.
-    private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            ForEach(ManagePane.allCases) { pane in
-                SidebarItem(pane: pane, selected: selection.pane == pane) { selection.pane = pane }
+/// The window's sidebar: the site, its three panes with counts, and whether it can be edited.
+struct ManageSidebar: View {
+    let manager: SiteManager
+    @Bindable var selection: ManageSelection
+
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        List(selection: Binding(get: { selection.pane }, set: { if let pane = $0 { selection.pane = pane } })) {
+            Section {
+                ForEach(ManagePane.allCases) { pane in
+                    Label(pane.title, systemImage: pane.symbol)
+                        .badge(count(pane))
+                        .tag(pane)
+                }
+            } header: {
+                header
             }
-            Spacer()
-            siteFooter
         }
-        .padding(.top, 52)
-        .padding(.horizontal, Theme.Space.s)
-        .background(VisualEffect(material: .sidebar).ignoresSafeArea())
+        .listStyle(.sidebar)
+        .safeAreaInset(edge: .bottom) { footer }
     }
 
-    private var siteFooter: some View {
+    private var header: some View {
         HStack(spacing: Theme.Space.s) {
             if let site = manager.site {
-                SiteIcon(key: manager.key, site: site, size: 22)
+                SiteIcon(key: manager.key, site: site, size: 26)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(site.name).font(.system(size: 12, weight: .semibold)).lineLimit(1)
-                    Label(manager.canEdit ? "Can edit" : "Read-only", systemImage: manager.canEdit ? "pencil" : "lock")
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(manager.canEdit ? AnyShapeStyle(Theme.up) : AnyShapeStyle(.secondary))
+                    Text(site.name)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Text(site.hostnames.first ?? site.id)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
-            Spacer(minLength: 0)
         }
+        .textCase(nil)
+        .padding(.bottom, Theme.Space.s)
+    }
+
+    private func count(_ pane: ManagePane) -> Int {
+        guard manager.loaded else { return 0 }
+        switch pane {
+        case .goals: return manager.goals.count
+        case .links: return manager.links.count
+        case .settings: return 0
+        }
+    }
+
+    private var footer: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(manager.canEdit ? Theme.lamp : Color.secondary.opacity(0.5))
+                .frame(width: 6, height: 6)
+            Text(manager.canEdit ? "Can edit" : "Read-only")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .padding(.horizontal, Theme.Space.l)
         .padding(.vertical, Theme.Space.m)
-        .padding(.horizontal, Theme.Space.xs)
         .contextMenu {
             if manager.canEdit {
                 Button("Remove Manage Token") { model.removeManageToken(manager.key) }
             }
         }
-    }
-}
-
-/// A sidebar row: the pane's symbol and name, with the selection drawn as the system draws it.
-private struct SidebarItem: View {
-    let pane: ManagePane
-    let selected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Hovering { hovering in
-                Label(pane.title, systemImage: pane.symbol)
-                    .font(.system(size: 13, weight: selected ? .semibold : .regular))
-                    .foregroundStyle(selected ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 10)
-                    .frame(height: 30)
-                    .background(
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(.primary.opacity(selected ? 0.1 : hovering ? 0.05 : 0))
-                    )
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? [.isSelected] : [])
+        .help(manager.canEdit ? "This site's manage token is in the Keychain." : "Allow editing to change goals, links, and settings.")
     }
 }
 
 // MARK: Read-only
 
 private struct ReadOnlyBanner: View {
+    let key: SiteKey
     let siteName: String
-    let addToken: () -> Void
+    let connectionName: String
+    let pasteToken: () -> Void
+
+    @Environment(AppModel.self) private var model
+    @State private var waiting: Task<Void, Never>?
+    @State private var problem: String?
 
     var body: some View {
-        HStack(spacing: Theme.Space.s) {
-            Image(systemName: "lock.fill")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-            Text("Read-only. Editing \(siteName) needs a manage token made for it in the dashboard, under Settings, MCP & API.")
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: Theme.Space.s)
-            Button("Add Manage Token…", action: addToken)
-                .buttonStyle(LampButtonStyle(compact: true))
+        VStack(alignment: .leading, spacing: Theme.Space.xs) {
+            HStack(spacing: Theme.Space.s) {
+                Image(systemName: waiting == nil ? "lock.fill" : "safari")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .contentTransition(.symbolEffect(.replace))
+                Text(waiting == nil
+                     ? "Read-only. Allow editing \(siteName) by signing in to \(connectionName) in your browser."
+                     : "Allow Runlight on the page in your browser, then come back here.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: Theme.Space.s)
+                if waiting == nil {
+                    Button("Paste a Token…", action: pasteToken)
+                        .buttonStyle(LinkButtonStyle())
+                    Button("Allow Editing…", action: allow)
+                        .buttonStyle(LampButtonStyle(compact: true))
+                } else {
+                    Spinner()
+                    Button("Cancel") { waiting?.cancel() }
+                        .buttonStyle(QuietButtonStyle(compact: true))
+                }
+            }
+            if let problem {
+                Text(problem)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.down)
+                    .padding(.leading, 19)
+                    .transition(.opacity)
+            }
         }
         .padding(.horizontal, Theme.Space.l)
         .padding(.vertical, Theme.Space.s + 2)
         .background(.primary.opacity(0.04))
         .overlay(alignment: .bottom) { Hairline() }
+        .animation(Theme.Motion.hover, value: waiting == nil)
+        .animation(Theme.Motion.hover, value: problem)
+    }
+
+    private func allow() {
+        problem = nil
+        waiting = Task {
+            do throws(ConnectError) {
+                try await model.allowEditing(key) { url in NSWorkspace.shared.open(url) }
+                // Back from the browser: Runlight comes forward again.
+                DockPresence.bringForward()
+            } catch {
+                if !Task.isCancelled { problem = error.message }
+            }
+            waiting = nil
+        }
     }
 }
 

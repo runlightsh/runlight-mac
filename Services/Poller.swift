@@ -22,8 +22,8 @@ final class Poller {
         /// While a site is open.
         var realtime: TimeInterval = 15
         var breakdown: TimeInterval = 120
-        /// A pinned site's live count, for its row, while nothing is open.
-        var pinnedRealtime: TimeInterval = 60
+        /// The live count beside each site in the popover while it's up, and a pinned site's always.
+        var liveCount: TimeInterval = 60
         /// For spike alerts, while they're on.
         var baseline: TimeInterval = 3600
         var sources: TimeInterval = 300
@@ -92,9 +92,12 @@ final class Poller {
             want(.realtime(key), last: detail?.realtimeAt, every: intervals.realtime)
             want(.breakdown(key, model.period), last: detail?.breakdowns[model.period]?.at, every: intervals.breakdown)
         }
-        // A pinned site's live count, every minute, popover or not.
-        if let key = model.pinnedSite, model.isShown(key), key != model.watchedSite {
-            want(.realtime(key), last: model.details[key]?.realtimeAt, every: intervals.pinnedRealtime)
+        // Every shown site's live count once a minute while the popover is up, and a pinned site's
+        // whether or not it is.
+        var counted = model.popoverVisible ? model.shownSites.map { SiteKey(connection: $0.connection.id, site: $0.site.id) } : []
+        if let key = model.pinnedSite, model.isShown(key) { counted.append(key) }
+        for key in counted where key != model.watchedSite {
+            want(.realtime(key), last: model.details[key]?.realtimeAt, every: intervals.liveCount)
         }
         let periods = Set([Period.today, model.period])
         for state in model.connections {
@@ -251,7 +254,7 @@ final class Poller {
         case .goals: intervals.goals
         case .sites: intervals.sites
         case .icon: intervals.icon
-        case .realtime(let key): model?.watchedSite == key ? intervals.realtime : intervals.pinnedRealtime
+        case .realtime(let key): model?.watchedSite == key ? intervals.realtime : intervals.liveCount
         case .breakdown: intervals.breakdown
         case .baseline: intervals.baseline
         case .sources: intervals.sources

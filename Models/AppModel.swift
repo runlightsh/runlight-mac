@@ -385,6 +385,25 @@ final class AppModel {
         manageTokens += 1
     }
 
+    /// Allows editing a site by signing in to the install in the browser and allowing the app there,
+    /// rather than copying a token: the install hands back a manage token for this one site.
+    func allowEditing(_ key: SiteKey, timeout: TimeInterval = 300, open: @escaping @MainActor (URL) -> Void) async throws(ConnectError) {
+        guard let state = connections.first(where: { $0.id == key.connection }) else { return }
+        let name = state.sites.first { $0.id == key.site }?.name ?? key.site
+        let grant: OAuthLoopback.Grant
+        do {
+            grant = try await OAuthLoopback.token(base: state.connection.baseURL, scope: "manage", site: key.site, session: session, timeout: timeout, open: open)
+        } catch {
+            throw ConnectError(field: .token, message: error.message)
+        }
+        // The page lets the person pick another site; this window is for one.
+        if let site = grant.site, site != key.site {
+            let other = state.sites.first { $0.id == site }?.name ?? site
+            throw ConnectError(field: .token, message: "That allowed editing \(other), not \(name). Try again and pick \(name) on the page.")
+        }
+        try await addManageToken(key, token: grant.access_token)
+    }
+
     /// Forgets a site's manage token; the site goes back to read-only.
     func removeManageToken(_ key: SiteKey) {
         vault.removeToken(for: VaultAccount.manage(key.connection, site: key.site))

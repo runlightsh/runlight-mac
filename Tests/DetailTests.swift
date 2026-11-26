@@ -19,7 +19,7 @@ struct DetailTests {
         return (harness, model, SiteKey(connection: state.id, site: "dailyphototips.com"))
     }
 
-    @Test func liveNumbersAreFetchedOnlyForTheOpenSiteWhileThePopoverIsUp() async throws {
+    @Test func liveCountsComeOnlyWhileThePopoverIsUp() async throws {
         let (_, model, key) = try await connected()
         model.period = .today
         let poller = Poller(model: model)
@@ -35,15 +35,21 @@ struct DetailTests {
         model.popoverOpened()
         #expect(poller.due[.realtime(key)] != nil)
         #expect(poller.due[.breakdown(key, .today)] != nil)
-        #expect(poller.due.keys.filter { if case .realtime = $0 { true } else { false } }.count == 1)
+        // Every shown site gets its live count while the popover is up: the open one every 15
+        // seconds, the rest every minute. Top lists only for the open one.
+        #expect(poller.due.keys.filter { if case .realtime = $0 { true } else { false } }.count == 4)
+        #expect(poller.due.keys.filter { if case .breakdown = $0 { true } else { false } }.count == 1)
+        #expect(poller.interval(for: .realtime(key)) == 15)
+        #expect(poller.interval(for: .realtime(SiteKey(connection: key.connection, site: "tulvane.com"))) == 60)
 
         model.popoverClosed()
-        #expect(poller.due[.realtime(key)] == nil)
+        #expect(!poller.due.keys.contains { if case .realtime = $0 { true } else { false } })
         #expect(poller.due[.breakdown(key, .today)] == nil)
 
         model.popoverOpened()
         model.expandedSite = nil
-        #expect(poller.due[.realtime(key)] == nil)
+        #expect(poller.due[.breakdown(key, .today)] == nil)
+        #expect(poller.interval(for: .realtime(key)) == 60)
     }
 
     @Test func liveNumbersRefreshEveryFifteenSecondsAndStopWhenClosed() async throws {
