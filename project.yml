@@ -52,6 +52,8 @@ targets:
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
+        # The dashboard window saves its CSV exports to Downloads.
+        com.apple.security.files.downloads.read-write: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: sh.runlight.mac

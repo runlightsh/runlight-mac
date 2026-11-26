@@ -3,6 +3,8 @@ import SwiftUI
 /// What the popover can ask the app to do.
 struct PopoverActions {
     var openSettings: (SettingsTab) -> Void = { _ in }
+    /// A site or a page of a dashboard: the dashboard window or the browser, as Settings says.
+    var openDashboard: (URL?) -> Void = { _ in }
     var addConnection: () -> Void = {}
     var quit: () -> Void = {}
 }
@@ -24,6 +26,11 @@ struct PopoverView: View {
         }
         .animation(Theme.Motion.push, value: model.isEmpty)
         .panelChrome()
+        // Links to a dashboard ("Open in Runlight", the arrow beside a site) go through the app.
+        .environment(\.openURL, OpenURLAction { url in
+            actions.openDashboard(url)
+            return .handled
+        })
     }
 
     @ViewBuilder private var content: some View {
@@ -67,6 +74,14 @@ struct PopoverView: View {
                 .help("Refresh")
                 .accessibilityLabel(model.isRefreshing ? "Refreshing" : "Refresh")
                 .keyboardShortcut("r", modifiers: .command)
+            }
+            if !model.isEmpty {
+                Button { actions.openDashboard(nil) } label: {
+                    Image(systemName: "macwindow")
+                }
+                .help("Open Dashboard")
+                .accessibilityLabel("Open Dashboard")
+                .keyboardShortcut("d", modifiers: .command)
             }
             AppearanceButton()
             Button { actions.openSettings(.general) } label: {

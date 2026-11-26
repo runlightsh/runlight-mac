@@ -138,6 +138,12 @@ final class AppModel {
     /// The menu bar lamp lights after an alert, until the popover is opened.
     var spikeLit = false
     @ObservationIgnored var notifier: any Notifier = SystemNotifier()
+    /// Whether a site opens in Runlight's dashboard window, or else the default browser.
+    var opensSitesInWindow = true {
+        didSet { defaults.set(opensSitesInWindow, forKey: "openSitesInWindow") }
+    }
+    /// Told when a connection is removed, so its dashboard window can close.
+    @ObservationIgnored var connectionRemoved: (UUID) -> Void = { _ in }
     /// Whether the menu bar shows total site visits beside the icon, or the icon alone.
     var showsMenuBarTotal = true {
         didSet { defaults.set(showsMenuBarTotal, forKey: "menuBarTotal") }
@@ -192,6 +198,7 @@ final class AppModel {
         showsMenuBarTotal = defaults.object(forKey: "menuBarTotal") as? Bool ?? true
         siteOrder = (defaults.stringArray(forKey: "siteOrder") ?? []).compactMap(SiteKey.init(storageKey:))
         usesCustomOrder = defaults.bool(forKey: "customSiteOrder")
+        opensSitesInWindow = defaults.object(forKey: "openSitesInWindow") as? Bool ?? true
         alertSettings = defaults.data(forKey: "alerts").flatMap { try? JSONDecoder().decode(AlertSettings.self, from: $0) } ?? AlertSettings()
         lastAlerts = ((defaults.dictionary(forKey: "lastAlerts") as? [String: Double]) ?? [:]).mapValues(Date.init(timeIntervalSince1970:))
         hiddenSites = Set((defaults.stringArray(forKey: "hiddenSites") ?? []).compactMap(SiteKey.init(storageKey:)))
@@ -283,6 +290,13 @@ final class AppModel {
     /// The site in the web dashboard, on the same period.
     func dashboardURL(_ key: SiteKey) -> URL? {
         connections.first { $0.id == key.connection }.flatMap { Self.dashboardURL(base: $0.connection.baseURL, site: key.site, period: period) }
+    }
+
+    /// The connection a dashboard address belongs to: the one whose address it starts with, the longest if several do.
+    func connection(for url: URL) -> Connection? {
+        connections.map(\.connection)
+            .filter { DashboardPolicy.sameOrigin(url, $0.baseURL) && url.path.hasPrefix($0.baseURL.path) }
+            .max { $0.baseURL.path.count < $1.baseURL.path.count }
     }
 
     /// The dashboard is served where the API is, and reads the site and period from the query.
@@ -400,6 +414,7 @@ final class AppModel {
         if expandedSite?.connection == id { expandedSite = nil }
         hiddenSites = hiddenSites.filter { $0.connection != id }
         siteOrder = siteOrder.filter { $0.connection != id }
+        connectionRemoved(id)
         baselines = baselines.filter { $0.key.connection != id }
         spikes = spikes.filter { $0.key.connection != id }
         persist()

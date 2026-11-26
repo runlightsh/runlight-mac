@@ -65,7 +65,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if let tab, let index = tabs.tabViewItems.firstIndex(where: { $0.identifier as? String == tab.rawValue }) {
             tabs.selectedTabViewItemIndex = index
         }
-        NSApp.setActivationPolicy(.regular)
+        DockPresence.windowOpened()
         if window?.isVisible != true { window?.center() }
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
@@ -74,12 +74,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         // Back to a menu bar app once nothing else is open.
-        DispatchQueue.main.async {
-            if !NSApp.windows.contains(where: { $0.isVisible && $0.styleMask.contains(.titled) }) {
-                NSApp.setActivationPolicy(.accessory)
-            }
-        }
+        DockPresence.windowClosed()
     }
+
 
     private static func view(for tab: SettingsTab) -> AnyView {
         switch tab {

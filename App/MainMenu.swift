@@ -26,6 +26,19 @@ enum MainMenu {
         edit.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         main.addItem(submenu: edit)
 
+        // For the dashboard window; the items find it through the responder chain.
+        let view = NSMenu(title: "View")
+        view.addItem(withTitle: "Back", action: #selector(DashboardWindowController.goBack(_:)), keyEquivalent: "[")
+        view.addItem(withTitle: "Forward", action: #selector(DashboardWindowController.goForward(_:)), keyEquivalent: "]")
+        view.addItem(withTitle: "Reload Page", action: #selector(DashboardWindowController.reloadPage(_:)), keyEquivalent: "r")
+        view.addItem(.separator())
+        view.addItem(withTitle: "Actual Size", action: #selector(DashboardWindowController.actualSize(_:)), keyEquivalent: "0")
+        view.addItem(withTitle: "Zoom In", action: #selector(DashboardWindowController.zoomIn(_:)), keyEquivalent: "+")
+        view.addItem(withTitle: "Zoom Out", action: #selector(DashboardWindowController.zoomOut(_:)), keyEquivalent: "-")
+        view.addItem(.separator())
+        view.addItem(withTitle: "Open in Browser", action: #selector(DashboardWindowController.openInBrowser(_:)), keyEquivalent: "O")
+        main.addItem(submenu: view)
+
         let window = NSMenu(title: "Window")
         window.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         window.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")

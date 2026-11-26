@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var popover: PopoverController?
     private let model = AppModel()
     private lazy var settings = SettingsWindowController(model: model)
+    private lazy var dashboards = DashboardWindows(model: model)
 
     /// Unit tests load the app as their host; they get no menu bar item.
     private var isRunningTests: Bool {
@@ -21,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let actions = PopoverActions(
             openSettings: { [weak self] tab in self?.openSettings(tab) },
+            openDashboard: { [weak self] url in self?.openDashboard(url) },
             addConnection: { [weak self] in
                 self?.model.addingConnection = true
                 self?.openSettings(.connections)
@@ -33,6 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover?.onHide = { model.popoverClosed() }
         popover?.onEscape = { withAnimation(Theme.Motion.push) { model.collapse() } }
         model.startPolling()
+        model.connectionRemoved = { [weak self] id in self?.dashboards.close(id) }
         UNUserNotificationCenter.current().delegate = self
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -56,6 +59,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.popover?.show(from: button) }
         }
         if defaults.bool(forKey: "AddConnection") { model.addingConnection = true }
+        // `-OpenDashboard YES` opens the first connection's dashboard window.
+        if defaults.bool(forKey: "OpenDashboard") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.openDashboard(nil) }
+        }
         // `-ExpandSite dailyphototips.com` opens that site's detail.
         if let site = defaults.string(forKey: "ExpandSite"), let entry = model.allSites.first(where: { $0.site.id == site }) {
             model.expandedSite = SiteKey(connection: entry.connection.id, site: site)
@@ -86,6 +93,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showContextMenu() {
         guard let item = statusItem else { return }
         let menu = NSMenu()
+        for state in model.connections {
+            let title = model.connections.count == 1 ? "Open Dashboard" : "Open \(state.connection.name)"
+            let entry = menu.addItem(withTitle: title, action: #selector(openDashboardFromMenu(_:)), keyEquivalent: "")
+            entry.target = self
+            entry.representedObject = state.connection.baseURL
+        }
+        if !model.connections.isEmpty { menu.addItem(.separator()) }
         menu.addItem(withTitle: "Settings…", action: #selector(openSettingsFromMenu), keyEquivalent: ",").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Runlight", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -95,6 +109,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openSettingsFromMenu() { openSettings(nil) }
+
+    @objc private func openDashboardFromMenu(_ sender: NSMenuItem) {
+        guard let base = sender.representedObject as? URL, let connection = model.connection(for: base) else { return }
+        popover?.hide()
+        dashboards.show(connection)
+    }
+
+    /// Opens a dashboard page in the window or the browser, as Settings says. With no address, the
+    /// first connection's dashboard where it was left.
+    func openDashboard(_ url: URL?) {
+        popover?.hide()
+        guard let url else {
+            if let first = model.connections.first?.connection {
+                if model.opensSitesInWindow { dashboards.show(first) } else { NSWorkspace.shared.open(first.baseURL) }
+            }
+            return
+        }
+        if model.opensSitesInWindow, let connection = model.connection(for: url) {
+            dashboards.show(connection, at: url)
+        } else {
+            NSWorkspace.shared.open(url)
+        }
+    }
 
     /// Keeps the number beside the icon in step with the model: today's visitors across every site,
     /// in the menu bar's own font with figures that don't shift as they change. Nothing shows until

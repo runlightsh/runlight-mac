@@ -25,6 +25,13 @@ struct GeneralSettingsView: View {
                     Text("Show total site visits in the menu bar")
                     Text("Beside the icon, for the period chosen in the popover.")
                 }
+                Picker(selection: $model.opensSitesInWindow) {
+                    Text("Runlight window").tag(true)
+                    Text("Web browser").tag(false)
+                } label: {
+                    Text("Open dashboards in")
+                    Text("Where a site opens from the popover.")
+                }
             }
             Section {
                 Toggle(isOn: Binding(get: { launchAtLogin.isOn }, set: { launchAtLogin.set($0) })) {

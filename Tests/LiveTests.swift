@@ -23,6 +23,27 @@ struct LiveTests {
         #expect(state.token?.scope == .read)
     }
 
+    /// Everything the popover, the detail, and spike alerts fetch, for every site, decodes.
+    @Test func everyNumberLoads() async throws {
+        let model = model()
+        let state = try await model.connect(address: address, token: token)
+        for site in state.sites {
+            let key = SiteKey(connection: state.id, site: site.id)
+            var jobs: [Job] = [.icon(key), .realtime(key), .baseline(key), .sources(key)]
+            for period in Period.allCases {
+                jobs += [.stats(key, period), .series(key, period), .goals(key, period), .breakdown(key, period)]
+            }
+            for job in jobs {
+                let worked = await model.perform(job)
+                #expect(worked, "\(job) failed for \(site.id): \(model.failures[key].map(\.message) ?? "")")
+            }
+            #expect(model.snapshot(key, .today)?.stats != nil)
+            #expect(model.snapshot(key, .today)?.series?.points.count ?? 0 >= 23)
+            #expect(model.details[key]?.realtime != nil)
+            #expect(model.details[key]?.breakdowns[.today] != nil)
+        }
+    }
+
     @Test func aWrongTokenIsRejected() async throws {
         await #expect(throws: ConnectError.tokenRejected) {
             try await model().connect(address: address, token: "rl_0000000000000000000000000000000000000000")
