@@ -51,7 +51,7 @@ struct ConnectionsSettingsView: View {
             AddConnectionSheet(done: { model.addingConnection = false })
         }
         .sheet(item: $replacing) { state in
-            SheetFrame(title: "Replace Token", detail: "Paste a new read-only token for \(state.connection.name). The current one stays until the new one works.") {
+            SheetFrame(title: "Replace Token", symbol: "key", detail: "Paste a new read-only token for \(state.connection.name). The current one stays until the new one works.") {
                 ReplaceTokenForm(state: state, done: { replacing = nil })
             }
         }
@@ -191,7 +191,7 @@ private struct ReplaceTokenForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.m) {
             RunlightField(label: "Read-only token", placeholder: "rl_…", text: $token, secure: true, error: error, focused: $focused, onSubmit: save)
-            HStack {
+            SheetFooter {
                 Spacer()
                 Button("Cancel", action: done)
                     .buttonStyle(QuietButtonStyle(compact: true))
@@ -239,12 +239,14 @@ private struct AddConnectionSheet: View {
             if let connected {
                 ConnectedMoment(state: connected)
                     .frame(width: 420)
+                    .background(Theme.panel)
+                    .presentationBackground(Theme.panel)
                     .task {
                         try? await Task.sleep(for: .seconds(1.4))
                         done()
                     }
             } else {
-                SheetFrame(title: "Add a Runlight Connection", detail: "Enter an install's address and a read-only token from its Settings, MCP & API.") {
+                SheetFrame(title: "Add a Runlight Connection", symbol: "point.3.connected.trianglepath.dotted", detail: "Enter an install's address and a read-only token from its Settings, MCP & API.") {
                     ConnectForm(onConnected: { state in withAnimation(Theme.Motion.push) { connected = state } }, onCancel: done)
                 }
             }
@@ -253,25 +255,3 @@ private struct AddConnectionSheet: View {
     }
 }
 
-/// The frame every Settings sheet shares: a title, a line of explanation, and the form.
-struct SheetFrame<Content: View>: View {
-    let title: String
-    let detail: String
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.l) {
-            VStack(alignment: .leading, spacing: Theme.Space.xs) {
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold))
-                Text(detail)
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            content
-        }
-        .padding(Theme.Space.xl)
-        .frame(width: 420)
-    }
-}

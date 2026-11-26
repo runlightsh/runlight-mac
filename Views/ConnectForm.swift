@@ -40,7 +40,7 @@ struct ConnectForm: View {
                 onSubmit: connect
             )
 
-            HStack(spacing: Theme.Space.s) {
+            SheetFooter {
                 Button {
                     openURL(Self.tokenHelp)
                 } label: {
@@ -70,7 +70,6 @@ struct ConnectForm: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(step != nil)
             }
-            .padding(.top, Theme.Space.xs)
             .animation(Theme.Motion.push, value: step)
         }
         .modifier(Shake(animatableData: shake))

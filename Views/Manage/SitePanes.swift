@@ -10,6 +10,7 @@ struct FunnelsPane: View {
     @State private var editing: Editing?
     @State private var deleting: Funnel?
     @State private var problem: String?
+    @State private var selected: String?
 
     struct Editing: Identifiable {
         let funnel: Funnel?
@@ -25,19 +26,19 @@ struct FunnelsPane: View {
             if manager.funnels.isEmpty {
                 PaneState(symbol: "line.3.horizontal.decrease", title: "No funnels yet", detail: "A funnel follows visits through pages or events in order, like /pricing, then /signup, then a Signup event, and shows where people drop off.")
             } else {
-                List {
-                    ForEach(manager.funnels) { funnel in
-                        FunnelRow(funnel: funnel)
-                            .contentShape(Rectangle())
-                            .onTapGesture(count: 2) { if manager.canEdit { editing = Editing(funnel: funnel) } }
-                            .contextMenu {
-                                Button("Edit…") { editing = Editing(funnel: funnel) }.disabled(!manager.canEdit)
-                                Button("Delete…", role: .destructive) { deleting = funnel }.disabled(!manager.canEdit)
-                            }
-                    }
+                List(manager.funnels, selection: $selected) { funnel in
+                    FunnelRow(funnel: funnel).tag(funnel.id)
                 }
                 .listStyle(.inset(alternatesRowBackgrounds: false))
                 .scrollContentBackground(.hidden)
+                .contextMenu(forSelectionType: String.self) { ids in
+                    if let funnel = ids.first.flatMap({ id in manager.funnels.first { $0.id == id } }) {
+                        Button("Edit…") { editing = Editing(funnel: funnel) }.disabled(!manager.canEdit)
+                        Button("Delete…", role: .destructive) { deleting = funnel }.disabled(!manager.canEdit)
+                    }
+                } primaryAction: { ids in
+                    if manager.canEdit, let funnel = ids.first.flatMap({ id in manager.funnels.first { $0.id == id } }) { editing = Editing(funnel: funnel) }
+                }
             }
         }
         .sheet(item: $editing) { item in
@@ -125,7 +126,7 @@ private struct FunnelForm: View {
     }
 
     var body: some View {
-        SheetFrame(title: funnel == nil ? "Add a Funnel" : "Edit Funnel", detail: "Visits are followed through these steps in order. A page can end in * to match many, like /blog/*.") {
+        SheetFrame(title: funnel == nil ? "Add a Funnel" : "Edit Funnel", symbol: "line.3.horizontal.decrease", width: 540, detail: "Visits are followed through these steps in order. A page can end in * to match many, like /blog/*.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Name", placeholder: "Signup", text: $name, error: errors[.name], focused: $nameFocused, onSubmit: save)
                 VStack(alignment: .leading, spacing: 6) {
@@ -133,14 +134,15 @@ private struct FunnelForm: View {
                     ForEach(steps.indices, id: \.self) { index in
                         HStack(spacing: 6) {
                             Text("\(index + 1)").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(.secondary).frame(width: 14)
-                            Picker("Kind", selection: $steps[index].kind) {
-                                Text("Page").tag("page")
-                                Text("Event").tag("event")
-                            }
-                            .labelsHidden()
-                            .frame(width: 84)
+                            FieldMenu(selection: $steps[index].kind, options: [("page", "Page"), ("event", "Event")])
+                                .frame(width: 96)
                             TextField(steps[index].kind == "page" ? "/pricing" : "Signup", text: $steps[index].match)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 13))
+                                .padding(.horizontal, 12)
+                                .frame(height: 36)
+                                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.primary.opacity(0.045)))
+                                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 0.5))
                             Button {
                                 steps.remove(at: index)
                             } label: {
@@ -166,7 +168,6 @@ private struct FunnelForm: View {
                 FormButtons(saving: working, title: funnel == nil ? "Add Funnel" : "Save", cancel: done, save: save)
             }
         }
-        .frame(width: 520)
         .onAppear { nameFocused = funnel == nil }
     }
 
@@ -288,13 +289,12 @@ private struct DomainForm: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        SheetFrame(title: "Add a Custom Domain", detail: "Point the domain at this Runlight first (a CNAME record, or the same address it uses), then add it here.") {
+        SheetFrame(title: "Add a Custom Domain", symbol: "globe", detail: "Point the domain at this Runlight first (a CNAME record, or the same address it uses), then add it here.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Domain", placeholder: "go.example.com", text: $domain, error: error, focused: $focused, onSubmit: save)
                 FormButtons(saving: working, title: "Add Domain", cancel: done, save: save)
             }
         }
-        .frame(width: 440)
         .onAppear { focused = true }
     }
 
@@ -414,33 +414,16 @@ private struct ReportForm: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        SheetFrame(title: "Add a Report", detail: "The first one goes out at the start of the next week or month, in the site's timezone.") {
+        SheetFrame(title: "Add a Report", symbol: "envelope", detail: "The first one goes out at the start of the next week or month, in the site's timezone.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Email", placeholder: "client@example.com", text: $email, error: error, focused: $focused, onSubmit: save)
-                HStack(spacing: Theme.Space.m) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("How often").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                        Picker("How often", selection: $frequency) {
-                            Text("Weekly").tag("weekly")
-                            Text("Monthly").tag("monthly")
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                    }
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("Language").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                        Picker("Language", selection: $lang) {
-                            ForEach(manager.reportLanguages, id: \.self) { code in
-                                Text(Locale.current.localizedString(forLanguageCode: code) ?? code).tag(code)
-                            }
-                        }
-                        .labelsHidden()
-                    }
+                HStack(alignment: .top, spacing: Theme.Space.m) {
+                    FieldSegments(label: "How often", selection: $frequency, options: [("weekly", "Weekly"), ("monthly", "Monthly")])
+                    FieldMenu(label: "Language", selection: $lang, options: manager.reportLanguages.map { ($0, Locale.current.localizedString(forLanguageCode: $0) ?? $0) })
                 }
                 FormButtons(saving: working, title: "Add Report", cancel: done, save: save)
             }
         }
-        .frame(width: 440)
         .onAppear {
             focused = true
             let mine = Locale.current.language.languageCode?.identifier ?? "en"
@@ -572,13 +555,12 @@ private struct ShareForm: View {
     }
 
     var body: some View {
-        SheetFrame(title: share == nil ? "Add a Share Link" : "Rename Share Link", detail: "The name is for you, so you know who has which link.") {
+        SheetFrame(title: share == nil ? "Add a Share Link" : "Rename Share Link", symbol: "person.2", detail: "The name is for you, so you know who has which link.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Name", placeholder: "For Acme", text: $name, error: error, focused: $focused, onSubmit: save)
                 FormButtons(saving: working, title: share == nil ? "Add Link" : "Save", cancel: done, save: save)
             }
         }
-        .frame(width: 420)
         .onAppear { focused = true }
     }
 
@@ -613,7 +595,7 @@ struct FormButtons: View {
     let save: () -> Void
 
     var body: some View {
-        HStack {
+        SheetFooter {
             Spacer()
             Button("Cancel", action: cancel)
                 .buttonStyle(QuietButtonStyle(compact: true))

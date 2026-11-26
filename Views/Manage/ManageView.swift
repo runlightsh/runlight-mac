@@ -235,10 +235,10 @@ struct ManageTokenSheet: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        SheetFrame(title: "Paste a Manage Token", detail: "For a manage token you already have for \(siteName), from a script or the dashboard. It can change only this site's goals, links, and settings. To get one without copying anything, cancel and choose Allow Editing.") {
+        SheetFrame(title: "Paste a Manage Token", symbol: "key", detail: "For a manage token you already have for \(siteName), from a script or the dashboard. It can change only this site's goals, links, and settings. To get one without copying anything, cancel and choose Allow Editing.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Manage token", placeholder: "rl_…", text: $token, secure: true, error: error, focused: $focused, onSubmit: save)
-                HStack {
+                SheetFooter {
                     Spacer()
                     Button("Cancel", action: done)
                         .buttonStyle(QuietButtonStyle(compact: true))
@@ -356,6 +356,7 @@ private struct GoalsPane: View {
     @State private var editing: GoalEdit?
     @State private var deleting: Goal?
     @State private var problem: String?
+    @State private var selected: String?
 
     struct GoalEdit: Identifiable {
         let goal: Goal?
@@ -379,21 +380,19 @@ private struct GoalsPane: View {
             } else if manager.goals.isEmpty {
                 PaneState(symbol: "flag", title: "No goals yet", detail: "A goal counts a page visit, like /thanks, or an event your site sends, like Signup.")
             } else {
-                List {
-                    ForEach(manager.goals) { result in
-                        GoalRow(result: result)
-                            .contentShape(Rectangle())
-                            .onTapGesture(count: 2) { edit(result.goal) }
-                            .contextMenu {
-                                Button("Edit…") { edit(result.goal) }
-                                    .disabled(!manager.canEdit || result.goal.kind == .click)
-                                Button("Delete…", role: .destructive) { deleting = result.goal }
-                                    .disabled(!manager.canEdit)
-                            }
-                    }
+                List(manager.goals, selection: $selected) { result in
+                    GoalRow(result: result).tag(result.goal.id)
                 }
                 .listStyle(.inset(alternatesRowBackgrounds: false))
                 .scrollContentBackground(.hidden)
+                .contextMenu(forSelectionType: String.self) { ids in
+                    if let goal = ids.first.flatMap({ id in manager.goals.first { $0.goal.id == id }?.goal }) {
+                        Button("Edit…") { edit(goal) }.disabled(!manager.canEdit || goal.kind == .click)
+                        Button("Delete…", role: .destructive) { deleting = goal }.disabled(!manager.canEdit)
+                    }
+                } primaryAction: { ids in
+                    if let goal = ids.first.flatMap({ id in manager.goals.first { $0.goal.id == id }?.goal }) { edit(goal) }
+                }
             }
         }
         .sheet(item: $editing) { edit in
@@ -498,6 +497,7 @@ private struct GoalForm: View {
     @FocusState private var nameFocused: Bool
     @FocusState private var matchFocused: Bool
     @FocusState private var amountFocused: Bool
+    @FocusState private var currencyFocused: Bool
 
     init(manager: SiteManager, goal: Goal?, needsToken: @escaping () -> Void, done: @escaping () -> Void) {
         self.manager = manager
@@ -511,18 +511,10 @@ private struct GoalForm: View {
     }
 
     var body: some View {
-        SheetFrame(title: goal == nil ? "Add a Goal" : "Edit Goal", detail: "Counts a visit to a page, or an event your site sends, as a conversion.") {
+        SheetFrame(title: goal == nil ? "Add a Goal" : "Edit Goal", symbol: "flag", width: 460, detail: "Counts a visit to a page, or an event your site sends, as a conversion.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Name", placeholder: "Newsletter signup", text: $input.name, error: errors[.name], focused: $nameFocused, onSubmit: save)
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Counts").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                    Picker("Counts", selection: $input.kind) {
-                        Text("A page visit").tag(GoalKind.page)
-                        Text("An event").tag(GoalKind.event)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                }
+                FieldSegments(label: "Counts", selection: $input.kind, options: [(GoalKind.page, "A page visit"), (GoalKind.event, "An event")])
                 RunlightField(
                     label: input.kind == .page ? "Page" : "Event name",
                     placeholder: input.kind == .page ? "/thanks*" : "Signup",
@@ -542,20 +534,14 @@ private struct GoalForm: View {
                     if hasAmount {
                         HStack(alignment: .top, spacing: Theme.Space.s) {
                             RunlightField(label: "Amount", placeholder: "49", text: $amount, error: errors[.value], focused: $amountFocused, onSubmit: save)
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("Currency").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                                TextField("USD", text: $input.currency)
-                                    .textFieldStyle(.plain)
-                                    .padding(.horizontal, 12)
-                                    .frame(width: 80, height: 36)
-                                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.primary.opacity(0.06)))
-                            }
+                            RunlightField(label: "Currency", placeholder: "USD", text: $input.currency, focused: $currencyFocused, onSubmit: save)
+                                .frame(width: 96)
                         }
                         .transition(.opacity)
                     }
                 }
                 FormError(message: problem)
-                HStack {
+                SheetFooter {
                     Spacer()
                     Button("Cancel", action: done)
                         .buttonStyle(QuietButtonStyle(compact: true))
@@ -573,7 +559,6 @@ private struct GoalForm: View {
                 }
             }
         }
-        .frame(width: 440)
         .animation(Theme.Motion.hover, value: errors)
         .onAppear { nameFocused = goal == nil }
     }
@@ -618,18 +603,30 @@ private struct LinksPane: View {
     @State private var editing: LinkEdit?
     @State private var deleting: ShortLink?
     @State private var selected: String?
-    @State private var copied: String?
     @State private var problem: String?
+    @State private var search = ""
 
     struct LinkEdit: Identifiable {
         let link: ShortLink?
         var id: String { link?.id ?? "new" }
     }
 
+    /// The links matching the search, by slug, name, or where they go.
+    private var shown: [ShortLink] {
+        let words = search.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !words.isEmpty else { return manager.links }
+        return manager.links.filter { $0.slug.lowercased().contains(words) || $0.name.lowercased().contains(words) || $0.url.lowercased().contains(words) }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             PaneHeader(title: "Links", detail: "Short links and their clicks in the last 30 days", add: "Add Link", canAdd: manager.canEdit) {
                 editing = LinkEdit(link: nil)
+            }
+            if manager.links.count > 8 {
+                SearchField(text: $search, prompt: "Search \(manager.links.count.formatted(.number)) links")
+                    .padding(.horizontal, Theme.Space.xl)
+                    .padding(.bottom, Theme.Space.s)
             }
             if let problem {
                 FormError(message: problem).padding(.horizontal, Theme.Space.xl).padding(.bottom, Theme.Space.s)
@@ -642,23 +639,26 @@ private struct LinksPane: View {
                 }
             } else if manager.links.isEmpty {
                 PaneState(symbol: "link", title: "No short links yet", detail: "A short link like \(manager.linkPrefix)/launch sends people on to any address, and counts their clicks.")
+            } else if shown.isEmpty {
+                PaneState(symbol: "magnifyingglass", title: "No links match", detail: "Nothing has \u{201C}\(search)\u{201D} in its short link, name, or destination.")
             } else {
-                List(selection: $selected) {
-                    ForEach(manager.links) { link in
-                        LinkRow(link: link, short: manager.shortURL(link), clicks: manager.linkClicks[link.id], expanded: selected == link.id, copied: copied == link.id) {
-                            copy(link)
-                        }
+                List(shown, selection: $selected) { link in
+                    LinkRow(link: link, short: manager.shortURL(link), clicks: selected == link.id ? manager.linkClicks[link.id] : nil, expanded: selected == link.id)
                         .tag(link.id)
-                        .contextMenu {
-                            Button("Copy Short Link") { copy(link) }
-                            Button("Edit…") { editing = LinkEdit(link: link) }.disabled(!manager.canEdit)
-                            Button("Delete…", role: .destructive) { deleting = link }.disabled(!manager.canEdit)
-                        }
-                        .onTapGesture(count: 2) { if manager.canEdit { editing = LinkEdit(link: link) } }
-                    }
                 }
                 .listStyle(.inset(alternatesRowBackgrounds: false))
                 .scrollContentBackground(.hidden)
+                // The list's own menu and double click, which don't hold up a single click the way a
+                // double-tap gesture on each row does.
+                .contextMenu(forSelectionType: String.self) { ids in
+                    if let link = ids.first.flatMap({ id in manager.links.first { $0.id == id } }) {
+                        Button("Copy Short Link") { LinkRow.copy(manager.shortURL(link)) }
+                        Button("Edit…") { editing = LinkEdit(link: link) }.disabled(!manager.canEdit)
+                        Button("Delete…", role: .destructive) { deleting = link }.disabled(!manager.canEdit)
+                    }
+                } primaryAction: { ids in
+                    if manager.canEdit, let link = ids.first.flatMap({ id in manager.links.first { $0.id == id } }) { editing = LinkEdit(link: link) }
+                }
                 .onChange(of: selected) { _, id in
                     if let id, let link = manager.links.first(where: { $0.id == id }), manager.linkClicks[id] == nil {
                         Task { await manager.loadClicks(link) }
@@ -666,7 +666,6 @@ private struct LinksPane: View {
                 }
             }
         }
-        .animation(Theme.Motion.push, value: selected)
         .sheet(item: $editing) { edit in
             LinkForm(manager: manager, link: edit.link, needsToken: needsToken) { editing = nil }
         }
@@ -690,16 +689,6 @@ private struct LinksPane: View {
             Text("The short link stops working at once, so anyone who follows it gets nothing. It sends people to \(link.url).")
         }
     }
-
-    private func copy(_ link: ShortLink) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(manager.shortURL(link), forType: .string)
-        withAnimation(Theme.Motion.hover) { copied = link.id }
-        Task {
-            try? await Task.sleep(for: .seconds(1.6))
-            withAnimation(Theme.Motion.hover) { if copied == link.id { copied = nil } }
-        }
-    }
 }
 
 private struct LinkRow: View {
@@ -707,8 +696,14 @@ private struct LinkRow: View {
     let short: String
     let clicks: [LinkClicksPoint]?
     let expanded: Bool
-    let copied: Bool
-    let copy: () -> Void
+
+    /// Kept here, so copying redraws this row and not the whole list.
+    @State private var copied = false
+
+    static func copy(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
@@ -727,7 +722,14 @@ private struct LinkRow: View {
                         .truncationMode(.middle)
                 }
                 Spacer()
-                Button(action: copy) {
+                Button {
+                    Self.copy(short)
+                    withAnimation(Theme.Motion.hover) { copied = true }
+                    Task {
+                        try? await Task.sleep(for: .seconds(1.6))
+                        withAnimation(Theme.Motion.hover) { copied = false }
+                    }
+                } label: {
                     Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
                         .labelStyle(.titleAndIcon)
                         .font(.system(size: 11, weight: .medium))
@@ -754,6 +756,36 @@ private struct LinkRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+/// A search field in the app's field style.
+struct SearchField: View {
+    @Binding var text: String
+    let prompt: String
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+            TextField(prompt, text: $text)
+                .textFieldStyle(.plain)
+                .font(.system(size: 12.5))
+                .focused($focused)
+            if !text.isEmpty {
+                Button { text = "" } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .help("Clear")
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 30)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.primary.opacity(0.045)))
+        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(focused ? Theme.lamp.opacity(0.6) : Theme.hairline, lineWidth: focused ? 1 : 0.5))
     }
 }
 
@@ -787,17 +819,12 @@ private struct LinkForm: View {
     }
 
     var body: some View {
-        SheetFrame(title: link == nil ? "Add a Short Link" : "Edit Short Link", detail: "A short address that sends people on to another one, and counts each click.") {
+        SheetFrame(title: link == nil ? "Add a Short Link" : "Edit Short Link", symbol: "link", width: 480, detail: "A short address that sends people on to another one, and counts each click.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Destination", placeholder: "https://example.com/launch", text: $url, error: errors[.url], focused: $urlFocused, onSubmit: save)
                 if !manager.linkDomains.isEmpty {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("Domain").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                        Picker("Domain", selection: $domain) {
-                            Text(manager.linkPrefix.replacingOccurrences(of: "https://", with: "")).tag("")
-                            ForEach(manager.linkDomains, id: \.self) { Text($0).tag($0) }
-                        }
-                        .labelsHidden()
+                        FieldMenu(label: "Domain", selection: $domain, options: [("", manager.linkPrefix.replacingOccurrences(of: "https://", with: ""))] + manager.linkDomains.map { ($0, $0) })
                         if let error = errors[.domain] {
                             Text(error).font(.system(size: 11)).foregroundStyle(Theme.down)
                         }
@@ -810,7 +837,7 @@ private struct LinkForm: View {
                     .padding(.top, -6)
                 RunlightField(label: "Name", placeholder: "Optional, for your own list", text: $name, error: errors[.name], focused: $nameFocused, onSubmit: save)
                 FormError(message: problem)
-                HStack {
+                SheetFooter {
                     Spacer()
                     Button("Cancel", action: done)
                         .buttonStyle(QuietButtonStyle(compact: true))
@@ -828,7 +855,6 @@ private struct LinkForm: View {
                 }
             }
         }
-        .frame(width: 460)
         .animation(Theme.Motion.hover, value: errors)
         .onAppear { urlFocused = link == nil }
     }
