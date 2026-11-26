@@ -178,3 +178,41 @@ struct SiteManagerTests {
         #expect(model.allSites.first { $0.site.id == "dailyphototips.com" }?.site.name == "Daily Photo Tips")
     }
 }
+
+@MainActor
+struct SiteSectionsTests {
+    @Test func aFunnelSendsOnlyItsSteps() throws {
+        let input = FunnelInput(name: "Signup", steps: [FunnelStep(kind: "page", match: "/pricing", visits: 120), FunnelStep(kind: "event", match: "Signup", visits: 9)])
+        let json = String(decoding: try RunlightClient.encoder.encode(input), as: UTF8.self)
+        #expect(json == #"{"name":"Signup","steps":[{"kind":"page","match":"\/pricing"},{"kind":"event","match":"Signup"}]}"#)
+    }
+
+    @Test func shareLinksAreFullAddresses() async throws {
+        let harness = Harness()
+        let model = harness.model()
+        let state = try await model.connect(address: harness.server.baseURL.absoluteString, token: "rl_read")
+        let manager = SiteManager(key: SiteKey(connection: state.id, site: "dailyphototips.com"), model: model)
+        let share = ShareLink(id: "abc", site: "dailyphototips.com", name: "Client", createdAt: nil, path: "/share/abc")
+        #expect(manager.shareURL(share) == harness.server.baseURL.absoluteString + "/share/abc")
+        withExtendedLifetime(model) {}
+    }
+
+    @Test func settingsOnlyAManageTokenReadsStayEmptyWithoutOne() async throws {
+        let harness = Harness()
+        harness.server.on("GET", "/api/goals", fixture: "goals-30d")
+        harness.server.on("GET", "/api/links", fixture: "links")
+        harness.server.on("GET", "/api/shares") { _ in .init(status: 200, body: Data(#"{"shares":[{"id":"s1","site":"dailyphototips.com","name":"Client","createdAt":1795638600000,"path":"/share/s1"}]}"#.utf8)) }
+        let model = harness.model()
+        let state = try await model.connect(address: harness.server.baseURL.absoluteString, token: "rl_read")
+        let key = SiteKey(connection: state.id, site: "dailyphototips.com")
+        let manager = SiteManager(key: key, model: model)
+        await manager.load()
+        #expect(manager.shares.isEmpty)
+        #expect(!harness.server.requests.contains { $0.url?.path == "/api/shares" })
+
+        try harness.vault.setToken("rl_manage", for: VaultAccount.manage(key.connection, site: key.site))
+        await manager.load()
+        #expect(manager.shares.map(\.id) == ["s1"])
+        #expect(harness.server.requests.last { $0.url?.path == "/api/shares" }?.value(forHTTPHeaderField: "Authorization") == "Bearer rl_manage")
+    }
+}

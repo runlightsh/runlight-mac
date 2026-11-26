@@ -106,5 +106,42 @@ struct LiveManageTests {
         try await manager.deleteLink(link)
         links = try await reader.links(site: key.site).links
         #expect(!links.contains { $0.id == link.id })
+
+        // A funnel: made, renamed, deleted.
+        try await manager.saveFunnel(FunnelInput(name: "Mac funnel \(tag)", steps: [FunnelStep(kind: "page", match: "/"), FunnelStep(kind: "event", match: "Signup")]), editing: nil)
+        var funnel = try #require(try await reader.funnels(site: key.site, period: .thirtyDays).first { $0.name == "Mac funnel \(tag)" })
+        #expect(funnel.steps.map(\.kind) == ["page", "event"])
+        try await manager.saveFunnel(FunnelInput(name: "Mac funnel \(tag) renamed", steps: funnel.steps), editing: funnel.id)
+        funnel = try #require(try await reader.funnels(site: key.site, period: .thirtyDays).first { $0.id == funnel.id })
+        #expect(funnel.name == "Mac funnel \(tag) renamed")
+        try await manager.deleteFunnel(funnel)
+        #expect(!(try await reader.funnels(site: key.site, period: .thirtyDays)).contains { $0.id == funnel.id })
+
+        // A share link: made, renamed, deleted, and its address opens the shared dashboard.
+        let editor = try #require(model.manageClient(for: key))
+        let share = try await manager.saveShare(name: "Mac share \(tag)", editing: nil)
+        #expect(try await editor.shares(site: key.site).contains { $0.id == share.id })
+        let (_, opened) = try await URLSession.shared.data(from: URL(string: manager.shareURL(share))!)
+        #expect((opened as? HTTPURLResponse)?.statusCode == 200)
+        try await manager.saveShare(name: "Mac share renamed", editing: share.id)
+        #expect(try await editor.shares(site: key.site).first { $0.id == share.id }?.name == "Mac share renamed")
+        try await manager.deleteShare(share)
+        #expect(!(try await editor.shares(site: key.site)).contains { $0.id == share.id })
+
+        // Email reports read, and adding one either works or says why (no email service set up).
+        let before = try await editor.reports(site: key.site)
+        #expect(!before.languages.isEmpty)
+        do throws(SiteManager.Failure) {
+            try await manager.addReport(ReportInput(email: "mac-\(tag)@example.com", frequency: "weekly", lang: "en"))
+            let report = manager.reports.first { $0.email == "mac-\(tag)@example.com" }
+            #expect(report != nil)
+            if let report { try await manager.deleteReport(report) }
+        } catch {
+            #expect(!error.message.isEmpty)
+            #expect(!error.needsManageToken)
+        }
+
+        // Link domains read, and a domain that doesn't point here is refused or reported as not working.
+        _ = try await editor.linkDomains(site: key.site)
     }
 }

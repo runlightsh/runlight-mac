@@ -1,13 +1,17 @@
 import SwiftUI
 
 enum ManagePane: String, CaseIterable, Identifiable {
-    case goals, links, settings
+    case goals, funnels, links, domains, reports, sharing, settings
     var id: Self { self }
 
     var title: String {
         switch self {
         case .goals: "Goals"
+        case .funnels: "Funnels"
         case .links: "Links"
+        case .domains: "Custom Domains"
+        case .reports: "Email Reports"
+        case .sharing: "Sharing"
         case .settings: "Settings"
         }
     }
@@ -15,10 +19,21 @@ enum ManagePane: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .goals: "flag"
+        case .funnels: "line.3.horizontal.decrease"
         case .links: "link"
+        case .domains: "globe"
+        case .reports: "envelope"
+        case .sharing: "person.2"
         case .settings: "slider.horizontal.3"
         }
     }
+
+    /// The sidebar's groups.
+    static let groups: [(title: String, panes: [ManagePane])] = [
+        ("Conversions", [.goals, .funnels]),
+        ("Links", [.links, .domains]),
+        ("Site", [.reports, .sharing, .settings]),
+    ]
 }
 
 /// The right side of a site's Manage window: the pane chosen in the sidebar. Without a manage
@@ -38,7 +53,11 @@ struct ManageDetail: View {
             Group {
                 switch selection.pane {
                 case .goals: GoalsPane(manager: manager, needsToken: { addingToken = true })
+                case .funnels: FunnelsPane(manager: manager, needsToken: { addingToken = true })
                 case .links: LinksPane(manager: manager, needsToken: { addingToken = true })
+                case .domains: DomainsPane(manager: manager, needsToken: { addingToken = true })
+                case .reports: ReportsPane(manager: manager, needsToken: { addingToken = true })
+                case .sharing: SharingPane(manager: manager, needsToken: { addingToken = true })
                 case .settings: SiteSettingsPane(manager: manager, needsToken: { addingToken = true })
                 }
             }
@@ -61,14 +80,16 @@ struct ManageSidebar: View {
 
     var body: some View {
         List(selection: Binding(get: { selection.pane }, set: { if let pane = $0 { selection.pane = pane } })) {
-            Section {
-                ForEach(ManagePane.allCases) { pane in
-                    Label(pane.title, systemImage: pane.symbol)
-                        .badge(count(pane))
-                        .tag(pane)
+            header
+                .listRowSeparator(.hidden)
+            ForEach(ManagePane.groups, id: \.title) { group in
+                Section(group.title) {
+                    ForEach(group.panes) { pane in
+                        Label(pane.title, systemImage: pane.symbol)
+                            .badge(count(pane))
+                            .tag(pane)
+                    }
                 }
-            } header: {
-                header
             }
         }
         .listStyle(.sidebar)
@@ -91,15 +112,19 @@ struct ManageSidebar: View {
                 }
             }
         }
-        .textCase(nil)
-        .padding(.bottom, Theme.Space.s)
+        .padding(.vertical, Theme.Space.xs)
+        .selectionDisabled()
     }
 
     private func count(_ pane: ManagePane) -> Int {
         guard manager.loaded else { return 0 }
         switch pane {
         case .goals: return manager.goals.count
+        case .funnels: return manager.funnels.count
         case .links: return manager.links.count
+        case .domains: return manager.linkDomains.count
+        case .reports: return manager.reports.count
+        case .sharing: return manager.shares.count
         case .settings: return 0
         }
     }
@@ -248,7 +273,7 @@ struct ManageTokenSheet: View {
 // MARK: Shared pieces
 
 /// A pane's title, what it shows, and its add button.
-private struct PaneHeader: View {
+struct PaneHeader: View {
     let title: String
     let detail: String
     let add: String
@@ -276,7 +301,7 @@ private struct PaneHeader: View {
 }
 
 /// Loading, a failure, or an empty list, in the middle of a pane.
-private struct PaneState: View {
+struct PaneState: View {
     let symbol: String
     let title: String
     let detail: String
@@ -304,7 +329,7 @@ private struct PaneState: View {
 }
 
 /// A form's error that belongs to no one field.
-private struct FormError: View {
+struct FormError: View {
     let message: String?
 
     var body: some View {
@@ -957,7 +982,7 @@ private struct SiteSettingsPane: View {
     }
 }
 
-private struct PaneHeaderPlain: View {
+struct PaneHeaderPlain: View {
     let title: String
     let detail: String
 

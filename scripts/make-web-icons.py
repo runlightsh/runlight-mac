@@ -27,7 +27,9 @@ LAMP = 'cx="23.6" cy="8.4"'
 def full(prefix="rl", view="0 0 1024 1024", square=False, attrs=""):
     """The app icon's look: a gradient tile, the R lit from above, and a glowing lamp."""
     p = prefix
-    body = '<rect x="100" y="100" width="824" height="824"/>' if square else '<rect x="100" y="100" width="824" height="824" rx="185"/>'
+    # Square, the tile runs past the edges, so the border pixels are as solid as the rest.
+    body = '<rect x="0" y="0" width="1024" height="1024"/>' if square else '<rect x="100" y="100" width="824" height="824" rx="185"/>'
+    fill = 'x="0" y="0" width="1024" height="1024"' if square else 'x="100" y="100" width="824" height="824"'
     rim = "" if square else f'<rect x="101.5" y="101.5" width="821" height="821" rx="184" fill="none" stroke="url(#{p}-rim)" stroke-width="3"/>'
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{view}"{attrs}><defs>'
@@ -41,7 +43,7 @@ def full(prefix="rl", view="0 0 1024 1024", square=False, attrs=""):
         f'<filter id="{p}-g" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="1.15"/></filter>'
         f'<mask id="{p}-n" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024"><rect width="1024" height="1024" fill="#fff"/><circle {LAMP} r="3.432" fill="#000" transform="{PLACE}"/></mask>'
         f'</defs>'
-        f'<g clip-path="url(#{p}-b)"><rect x="100" y="100" width="824" height="824" fill="url(#{p}-t)"/><rect x="100" y="100" width="824" height="824" fill="url(#{p}-s)"/>{rim}</g>'
+        f'<g clip-path="url(#{p}-b)"><rect {fill} fill="url(#{p}-t)"/><rect {fill} fill="url(#{p}-s)"/>{rim}</g>'
         f'<g mask="url(#{p}-n)"><g transform="{PLACE}" filter="url(#{p}-d)"><path d="{LETTER}" fill="none" stroke="url(#{p}-r)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>'
         f'<g transform="{PLACE}"><circle {LAMP} r="2.6" fill="#4ade80" fill-opacity=".9" filter="url(#{p}-g)"/><circle {LAMP} r="2.6" fill="url(#{p}-l)"/></g>'
         f'</svg>'

@@ -163,11 +163,11 @@ struct RunlightClient: Sendable {
         var body: Data?
     }
 
-    private func get<T: Decodable>(_ path: String, _ query: [String: String] = [:]) async throws(RunlightError) -> T {
+    func get<T: Decodable>(_ path: String, _ query: [String: String] = [:]) async throws(RunlightError) -> T {
         try await Self.send(Request(method: "GET", path: path, query: query), baseURL: baseURL, token: token, session: session)
     }
 
-    private func write<T: Decodable, Body: Encodable>(_ method: String, _ path: String, site: String?, body: Body?) async throws(RunlightError) -> T {
+    func write<T: Decodable, Body: Encodable>(_ method: String, _ path: String, site: String?, body: Body?) async throws(RunlightError) -> T {
         var request = Request(method: method, path: path, query: site.map { ["site": $0] } ?? [:])
         if let body {
             do { request.body = try Self.encoder.encode(body) } catch { throw .decoding("Couldn't encode the request: \(error)") }
@@ -240,7 +240,7 @@ struct RunlightClient: Sendable {
         return encoder
     }()
 
-    private static func escape(_ part: String) -> String {
+    static func escape(_ part: String) -> String {
         part.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))) ?? part
     }
 }
