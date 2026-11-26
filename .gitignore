@@ -12,3 +12,4 @@ xcuserdata/
 # Secrets and captured responses with tokens
 *.env
 .fixtures-raw/
+CLAUDE.md
