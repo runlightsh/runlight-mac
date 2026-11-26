@@ -228,7 +228,10 @@ extension AppModel {
     // MARK: Polling
 
     func startPolling() {
-        if poller == nil { poller = Poller(model: self) }
+        if poller == nil {
+            poller = Poller(model: self)
+            poller?.setRefresh(minutes: refreshMinutes)
+        }
         poller?.start()
         if conditions == nil {
             let conditions = SystemConditions()

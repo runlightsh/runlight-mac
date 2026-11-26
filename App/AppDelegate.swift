@@ -138,20 +138,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// the first numbers arrive.
     private func followMenuBarNumber() {
         withObservationTracking {
-            updateMenuBarNumber(model.showsMenuBarTotal ? model.totals.visitors : nil, period: model.period)
+            updateMenuBarNumber(model.menuBarNumber)
             updateMenuBarLamp(model.spikeLit)
         } onChange: { [weak self] in
             DispatchQueue.main.async { self?.followMenuBarNumber() }
         }
     }
 
-    /// Total site visits for the period the popover shows, so the two always agree.
-    private func updateMenuBarNumber(_ visitors: Int?, period: Period) {
+    /// The total, or the pinned site's visitors, for the period the popover shows, so the two agree.
+    private func updateMenuBarNumber(_ number: (value: Int, description: String)?) {
         guard let button = statusItem?.button else { return }
-        let text = visitors.map { " " + NumberText.compact($0) } ?? ""
-        let when = period == .today ? "today" : "in the last \(period.title)"
-        button.toolTip = visitors.map { "\($0.formatted(.number)) total site visits \(when), across every site" }
-        button.setAccessibilityLabel(visitors.map { "Runlight, \($0) total site visits \(when)" } ?? "Runlight")
+        let text = number.map { " " + NumberText.compact($0.value) } ?? ""
+        button.toolTip = number?.description
+        button.setAccessibilityLabel(number.map { "Runlight, \($0.description)" } ?? "Runlight")
         guard button.title != text else { return }
         button.attributedTitle = NSAttributedString(string: text, attributes: [
             .font: NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .medium),

@@ -81,7 +81,7 @@ struct DetailTests {
         #expect(model.inFlight == 0)
         #expect(model.details[key]?.realtime?.visitors == 52)
         #expect(model.details[key]?.liveVisitors(at: model.now()) == 52)
-        #expect(model.details[key]?.liveVisitors(at: model.now().addingTimeInterval(120)) == nil)
+        #expect(model.details[key]?.liveVisitors(at: model.now().addingTimeInterval(100)) == nil)
 
         #expect(await model.perform(.breakdown(key, .today)))
         let lists = try #require(model.details[key]?.breakdowns[.today])
@@ -149,11 +149,58 @@ struct DetailTests {
         #expect(harness.model().period == .sevenDays)
     }
 
-    @Test func theMenuBarTotalCanBeHiddenAndStaysHidden() async throws {
-        let (harness, model, _) = try await connected()
-        #expect(model.showsMenuBarTotal)
-        model.showsMenuBarTotal = false
-        #expect(!harness.model().showsMenuBarTotal)
+    @Test func theMenuBarShowsTheIconTheTotalOrAPinnedSite() async throws {
+        let (harness, model, key) = try await connected()
+        await model.perform(.stats(key, .today))
+        #expect(model.menuBarDisplay == .total)
+        #expect(model.menuBarNumber?.value == 1273)
+
+        model.menuBarDisplay = .icon
+        #expect(model.menuBarNumber == nil)
+
+        model.menuBarDisplay = .site(key)
+        #expect(model.menuBarNumber?.value == 1273)
+        #expect(model.menuBarNumber?.description.hasPrefix("DailyPhotoTips:") == true)
+        #expect(harness.model().menuBarDisplay == .site(key))
+
+        // Switching the pinned site off goes back to the total.
+        model.setShown(key, false)
+        #expect(model.menuBarDisplay == .total)
+    }
+
+    @Test func aPinnedSitesLiveCountComesEveryMinute() async throws {
+        let (_, model, key) = try await connected()
+        let poller = Poller(model: model)
+        model.poller = poller
+        poller.reconcile()
+        #expect(poller.due[.realtime(key)] == nil)
+        model.menuBarDisplay = .site(key)
+        #expect(poller.due[.realtime(key)] != nil)
+        #expect(poller.interval(for: .realtime(key)) == 60)
+        // Opened in the popover, it's every 15 seconds.
+        model.expandedSite = key
+        model.popoverOpened()
+        #expect(poller.interval(for: .realtime(key)) == 15)
+    }
+
+    @Test func theRefreshIntervalSetsHowOftenNumbersCome() async throws {
+        let (harness, model, key) = try await connected()
+        let poller = Poller(model: model)
+        model.poller = poller
+        model.refreshMinutes = 1
+        #expect(poller.interval(for: .stats(key, .today)) == 60)
+        #expect(poller.interval(for: .series(key, .today)) == 300)
+        model.refreshMinutes = 15
+        #expect(poller.interval(for: .stats(key, .today)) == 900)
+        #expect(poller.interval(for: .goals(key, .today)) == 900)
+        #expect(harness.model().refreshMinutes == 15)
+    }
+
+    @Test func theOldMenuBarSwitchCarriesOver() {
+        let defaults = UserDefaults(suiteName: "sh.runlight.mac.tests.\(UUID().uuidString)")!
+        defaults.set(false, forKey: "menuBarTotal")
+        let model = AppModel(store: ConnectionStore(directory: FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)), vault: MemoryVault(), defaults: defaults)
+        #expect(model.menuBarDisplay == .icon)
     }
 
     @Test func theMenuBarTotalFollowsThePeriod() async throws {

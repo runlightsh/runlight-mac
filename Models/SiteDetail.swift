@@ -13,9 +13,9 @@ struct SiteDetail: Equatable, Sendable {
     var realtimeAt: Date?
     var breakdowns: [Period: Breakdowns] = [:]
 
-    /// Live numbers from the last minute, recent enough to show as "now".
+    /// Live numbers from the last minute and a half, recent enough to show as "now".
     func liveVisitors(at now: Date) -> Int? {
-        guard let realtime, let at = realtimeAt, now.timeIntervalSince(at) < 60 else { return nil }
+        guard let realtime, let at = realtimeAt, now.timeIntervalSince(at) < 90 else { return nil }
         return realtime.visitors
     }
 }

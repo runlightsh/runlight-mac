@@ -148,10 +148,21 @@ final class AppModel {
     }
     /// Told when a connection is removed, so its dashboard window can close.
     @ObservationIgnored var connectionRemoved: (UUID) -> Void = { _ in }
-    /// Whether the menu bar shows total site visits beside the icon, or the icon alone.
-    var showsMenuBarTotal = true {
-        didSet { defaults.set(showsMenuBarTotal, forKey: "menuBarTotal") }
+    /// What sits beside the icon in the menu bar: nothing, the total, or one pinned site.
+    var menuBarDisplay: MenuBarDisplay = .total {
+        didSet {
+            defaults.set(menuBarDisplay.stored, forKey: "menuBar")
+            if menuBarDisplay != oldValue { poller?.reconcile() }
+        }
     }
+    /// How often the numbers are fetched in the background, in minutes: 1, 2, 5, or 15.
+    var refreshMinutes = 2 {
+        didSet {
+            defaults.set(refreshMinutes, forKey: "refreshMinutes")
+            poller?.setRefresh(minutes: refreshMinutes)
+        }
+    }
+    static let refreshChoices = [1, 2, 5, 15]
     /// The last good numbers for each period and site.
     var snapshots: [Period: [SiteKey: SiteSnapshot]] = [:]
     /// Why a site's last fetch failed, until one works.
@@ -199,7 +210,10 @@ final class AppModel {
         self.store = store
         self.defaults = defaults
         period = Period(rawValue: defaults.string(forKey: "period") ?? "") ?? .today
-        showsMenuBarTotal = defaults.object(forKey: "menuBarTotal") as? Bool ?? true
+        // An earlier version had only a switch for the total.
+        menuBarDisplay = defaults.string(forKey: "menuBar").flatMap(MenuBarDisplay.init(stored:))
+            ?? (defaults.object(forKey: "menuBarTotal") as? Bool == false ? .icon : .total)
+        refreshMinutes = Self.refreshChoices.contains(defaults.integer(forKey: "refreshMinutes")) ? defaults.integer(forKey: "refreshMinutes") : 2
         siteOrder = (defaults.stringArray(forKey: "siteOrder") ?? []).compactMap(SiteKey.init(storageKey:))
         usesCustomOrder = defaults.bool(forKey: "customSiteOrder")
         opensSitesInWindow = defaults.object(forKey: "openSitesInWindow") as? Bool ?? true
@@ -257,6 +271,8 @@ final class AppModel {
 
     func setShown(_ key: SiteKey, _ shown: Bool) {
         if !shown, expandedSite == key { expandedSite = nil }
+        // A site switched off can't stay pinned.
+        if !shown, menuBarDisplay == .site(key) { menuBarDisplay = .total }
         if shown { hiddenSites.remove(key) } else { hiddenSites.insert(key) }
     }
 
@@ -425,6 +441,7 @@ final class AppModel {
         if expandedSite?.connection == id { expandedSite = nil }
         hiddenSites = hiddenSites.filter { $0.connection != id }
         siteOrder = siteOrder.filter { $0.connection != id }
+        if case .site(let pinned) = menuBarDisplay, pinned.connection == id { menuBarDisplay = .total }
         connectionRemoved(id)
         baselines = baselines.filter { $0.key.connection != id }
         spikes = spikes.filter { $0.key.connection != id }
@@ -509,5 +526,53 @@ final class AppModel {
         let port = baseURL.port.map { ":\($0)" } ?? ""
         let path = baseURL.path == "/" ? "" : baseURL.path
         return host + port + path
+    }
+}
+
+/// What the menu bar shows beside the Runlight icon.
+enum MenuBarDisplay: Hashable, Sendable {
+    case icon
+    case total
+    /// One site's visitors.
+    case site(SiteKey)
+
+    var stored: String {
+        switch self {
+        case .icon: "icon"
+        case .total: "total"
+        case .site(let key): "site:" + key.storageKey
+        }
+    }
+
+    init?(stored: String) {
+        switch stored {
+        case "icon": self = .icon
+        case "total": self = .total
+        default:
+            guard stored.hasPrefix("site:"), let key = SiteKey(storageKey: String(stored.dropFirst(5))) else { return nil }
+            self = .site(key)
+        }
+    }
+}
+
+extension AppModel {
+    /// The pinned site, if one is.
+    var pinnedSite: SiteKey? {
+        if case .site(let key) = menuBarDisplay { key } else { nil }
+    }
+
+    /// The number beside the menu bar icon and what it means, or nil for the icon alone.
+    var menuBarNumber: (value: Int, description: String)? {
+        let when = period == .today ? "today" : "in the last \(period.title)"
+        switch menuBarDisplay {
+        case .icon:
+            return nil
+        case .total:
+            return totals.visitors.map { ($0, "\($0.formatted(.number)) total site visits \(when), across every site") }
+        case .site(let key):
+            guard let site = allSites.first(where: { $0.connection.id == key.connection && $0.site.id == key.site })?.site,
+                  let visitors = summary(key).visitors else { return nil }
+            return (visitors, "\(site.name): \(visitors.formatted(.number)) visitors \(when)")
+        }
     }
 }

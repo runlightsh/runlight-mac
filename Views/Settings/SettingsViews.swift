@@ -21,9 +21,26 @@ struct GeneralSettingsView: View {
             .onChange(of: appearance) { _, new in AppAppearance.apply(new) }
             Section {
                 @Bindable var model = model
-                Toggle(isOn: $model.showsMenuBarTotal) {
-                    Text("Show total site visits in the menu bar")
-                    Text("Beside the icon, for the period chosen in the popover.")
+                Picker(selection: $model.menuBarDisplay) {
+                    Text("Icon only").tag(MenuBarDisplay.icon)
+                    Text("Total site visits").tag(MenuBarDisplay.total)
+                    if !model.shownSites.isEmpty {
+                        Divider()
+                        ForEach(model.shownSites, id: \.site.id) { entry in
+                            Text(entry.site.name).tag(MenuBarDisplay.site(SiteKey(connection: entry.connection.id, site: entry.site.id)))
+                        }
+                    }
+                } label: {
+                    Text("Menu bar shows")
+                    Text("Beside the icon, for the period chosen in the popover. Pin a site in Sites, too.")
+                }
+                Picker(selection: $model.refreshMinutes) {
+                    ForEach(AppModel.refreshChoices, id: \.self) { minutes in
+                        Text(minutes == 1 ? "Every minute" : "Every \(minutes) minutes").tag(minutes)
+                    }
+                } label: {
+                    Text("Refresh")
+                    Text("How often the numbers update in the background. An open site's live count updates every 15 seconds.")
                 }
                 Picker(selection: $model.opensSitesInWindow) {
                     Text("Runlight window").tag(true)

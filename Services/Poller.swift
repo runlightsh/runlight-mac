@@ -22,6 +22,8 @@ final class Poller {
         /// While a site is open.
         var realtime: TimeInterval = 15
         var breakdown: TimeInterval = 120
+        /// A pinned site's live count, for its row, while nothing is open.
+        var pinnedRealtime: TimeInterval = 60
         /// For spike alerts, while they're on.
         var baseline: TimeInterval = 3600
         var sources: TimeInterval = 300
@@ -90,6 +92,10 @@ final class Poller {
             want(.realtime(key), last: detail?.realtimeAt, every: intervals.realtime)
             want(.breakdown(key, model.period), last: detail?.breakdowns[model.period]?.at, every: intervals.breakdown)
         }
+        // A pinned site's live count, every minute, popover or not.
+        if let key = model.pinnedSite, model.isShown(key), key != model.watchedSite {
+            want(.realtime(key), last: model.details[key]?.realtimeAt, every: intervals.pinnedRealtime)
+        }
         let periods = Set([Period.today, model.period])
         for state in model.connections {
             want(.sites(state.id), last: state.lastChecked, every: intervals.sites)
@@ -136,6 +142,15 @@ final class Poller {
             }
         }
         wake()
+    }
+
+    /// The refresh interval from Settings: today's headline numbers every so many minutes, and the
+    /// charts and goals no more often than every five.
+    func setRefresh(minutes: Int) {
+        let seconds = TimeInterval(minutes * 60)
+        intervals.stats = seconds
+        intervals.series = max(300, seconds)
+        intervals.goals = max(300, seconds)
     }
 
     // MARK: Pausing
@@ -236,7 +251,7 @@ final class Poller {
         case .goals: intervals.goals
         case .sites: intervals.sites
         case .icon: intervals.icon
-        case .realtime: intervals.realtime
+        case .realtime(let key): model?.watchedSite == key ? intervals.realtime : intervals.pinnedRealtime
         case .breakdown: intervals.breakdown
         case .baseline: intervals.baseline
         case .sources: intervals.sources

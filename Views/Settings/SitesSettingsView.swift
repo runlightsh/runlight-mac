@@ -143,6 +143,7 @@ private struct SiteSettingsRow: View {
             .font(.system(size: 11))
             .foregroundStyle(.tertiary)
             .help(site.timezone)
+        PinButton(key: key, site: site, shown: shown)
         Toggle("Show \(site.name)", isOn: Binding(get: { shown }, set: { model.setShown(key, $0) }))
             .toggleStyle(.switch)
             .controlSize(.small)
@@ -205,5 +206,36 @@ private struct GripDots: View {
                 }
             }
         }
+    }
+}
+
+/// Pins a site's visitors beside the menu bar icon, or unpins it back to the total.
+private struct PinButton: View {
+    let key: SiteKey
+    let site: Site
+    let shown: Bool
+
+    @Environment(AppModel.self) private var model
+    @State private var hovering = false
+
+    var body: some View {
+        let pinned = model.menuBarDisplay == .site(key)
+        Button {
+            withAnimation(Theme.Motion.hover) { model.menuBarDisplay = pinned ? .total : .site(key) }
+        } label: {
+            Image(systemName: pinned ? "pin.fill" : "pin")
+                .font(.system(size: 11, weight: .semibold))
+                .rotationEffect(.degrees(pinned ? 0 : 45))
+                .foregroundStyle(pinned ? AnyShapeStyle(Theme.lamp) : AnyShapeStyle(hovering ? .secondary : .tertiary))
+                .frame(width: 22, height: 22)
+                .contentShape(Rectangle())
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .disabled(!shown)
+        .opacity(shown ? 1 : 0.3)
+        .help(pinned ? "Pinned to the menu bar. Click to show the total again." : "Show \(site.name)'s visitors in the menu bar")
+        .accessibilityLabel(pinned ? "Unpin \(site.name) from the menu bar" : "Pin \(site.name) to the menu bar")
     }
 }

@@ -84,9 +84,11 @@ struct PollerHardeningTests {
     }
 
     @Test func lowPowerModeDoublesBackgroundIntervalsButNotTheOpenSite() async throws {
-        let (_, _, poller, key) = try await running()
+        let (_, model, poller, key) = try await running()
         poller.intervals = Poller.Intervals()
         #expect(poller.interval(for: .stats(key, .today)) == 120)
+        model.expandedSite = key
+        model.popoverOpened()
         poller.lowPower = true
         #expect(poller.interval(for: .stats(key, .today)) == 240)
         #expect(poller.interval(for: .series(key, .today)) == 600)
