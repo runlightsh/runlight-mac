@@ -75,3 +75,7 @@ scripts/check.sh
 ```
 
 The app is built to `build/Build/Products/Debug/Runlight.app`.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
