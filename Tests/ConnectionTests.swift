@@ -216,6 +216,16 @@ struct ManageConnectionTests {
         #expect(model.connections.first?.status == .ok)
     }
 
+    @Test func manageTokensFromAnEarlierBuildAreForgotten() async throws {
+        let harness = Harness()
+        let state = try await harness.model().connect(address: harness.server.baseURL.absoluteString, token: "rl_good")
+        try harness.vault.setToken("rl_manage", for: VaultAccount.manage(state.id, site: "dailyphototips.com"))
+        _ = harness.model()
+        #expect(harness.vault.token(for: VaultAccount.manage(state.id, site: "dailyphototips.com")) == nil)
+        // The read token stays.
+        #expect(harness.vault.token(for: VaultAccount.read(state.id)) == "rl_good")
+    }
+
     @Test func namesReadLikeAddresses() {
         #expect(AppModel.name(for: URL(string: "https://analytics.joncp.dev")!) == "analytics.joncp.dev")
         #expect(AppModel.name(for: URL(string: "https://example.com/runlight")!) == "example.com/runlight")

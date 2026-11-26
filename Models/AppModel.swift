@@ -112,8 +112,6 @@ final class AppModel {
     var siteOrder: [SiteKey] = [] {
         didSet { defaults.set(siteOrder.map(\.storageKey), forKey: "siteOrder") }
     }
-    /// Changes when a manage token is added or removed, so views asking `canEdit` look again.
-    var manageTokens = 0
     /// The site being dragged in Settings, shown as a placeholder while the others move around it.
     var draggingSite: SiteKey?
     /// Whether the popover lists sites in that order rather than busiest first.
@@ -232,6 +230,17 @@ final class AppModel {
             )
         }
         loadCache()
+        forgetManageTokens()
+    }
+
+    /// An earlier build edited sites with a manage token per site, kept in the Keychain. Editing
+    /// now happens in the dashboard window, so any left over go.
+    private func forgetManageTokens() {
+        for state in connections {
+            for site in state.sites {
+                vault.removeToken(for: VaultAccount.manage(state.id, site: site.id))
+            }
+        }
     }
 
     var isEmpty: Bool { connections.isEmpty }
@@ -313,8 +322,8 @@ final class AppModel {
     }
 
     /// The site in the web dashboard, on the same period.
-    func dashboardURL(_ key: SiteKey) -> URL? {
-        connections.first { $0.id == key.connection }.flatMap { Self.dashboardURL(base: $0.connection.baseURL, site: key.site, period: period) }
+    func dashboardURL(_ key: SiteKey, open: String? = nil) -> URL? {
+        connections.first { $0.id == key.connection }.flatMap { Self.dashboardURL(base: $0.connection.baseURL, site: key.site, period: period, open: open) }
     }
 
     /// The connection a dashboard address belongs to: the one whose address it starts with, the longest if several do.
@@ -325,89 +334,18 @@ final class AppModel {
     }
 
     /// The dashboard is served where the API is, and reads the site and period from the query.
-    static func dashboardURL(base: URL, site: String, period: Period) -> URL? {
+    /// `open` names a part of the dashboard to open on, such as `settings:goals`.
+    static func dashboardURL(base: URL, site: String, period: Period, open: String? = nil) -> URL? {
         guard var components = URLComponents(url: base, resolvingAgainstBaseURL: false) else { return nil }
         if !components.percentEncodedPath.hasSuffix("/") { components.percentEncodedPath += "/" }
         components.queryItems = [URLQueryItem(name: "site", value: site), URLQueryItem(name: "period", value: period.rawValue)]
+            + (open.map { [URLQueryItem(name: "open", value: $0)] } ?? [])
         return components.url
     }
 
     func client(for id: UUID) -> RunlightClient? {
         guard let state = connections.first(where: { $0.id == id }), let token = vault.token(for: VaultAccount.read(id)) else { return nil }
         return RunlightClient(baseURL: state.connection.baseURL, token: token, session: session)
-    }
-
-    // MARK: Manage tokens
-
-    /// Whether a site can be edited: a manage token for it is in the Keychain. Read through
-    /// `manageTokens` so views update when one is added or removed.
-    func canEdit(_ key: SiteKey) -> Bool {
-        _ = manageTokens
-        return vault.token(for: VaultAccount.manage(key.connection, site: key.site)) != nil
-    }
-
-    /// A client that edits one site, with its manage token.
-    func manageClient(for key: SiteKey) -> RunlightClient? {
-        guard let state = connections.first(where: { $0.id == key.connection }),
-              let token = vault.token(for: VaultAccount.manage(key.connection, site: key.site)) else { return nil }
-        return RunlightClient(baseURL: state.connection.baseURL, token: token, session: session)
-    }
-
-    /// Checks a pasted manage token against the install and keeps it for this one site.
-    func addManageToken(_ key: SiteKey, token rawToken: String) async throws(ConnectError) {
-        let token = rawToken.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !token.isEmpty else { throw ConnectError(field: .token, message: "Paste the site's manage token.") }
-        guard let state = connections.first(where: { $0.id == key.connection }) else { return }
-        let name = state.sites.first { $0.id == key.site }?.name ?? key.site
-        let info: TokenInfo
-        do {
-            info = try await RunlightClient(baseURL: state.connection.baseURL, token: token, session: session).tokenInfo()
-        } catch {
-            if error.isTokenRejected { throw .tokenRejected }
-            throw .network(error)
-        }
-        switch info.scope {
-        case .manage where info.site == key.site:
-            break
-        case .manage:
-            let other = state.sites.first { $0.id == info.site }?.name ?? info.site
-            throw ConnectError(field: .token, message: "This manage token is for \(other), not \(name). Choose Allow Editing to get one for \(name).")
-        case .read:
-            throw ConnectError(field: .token, message: "This is a read-only token. Editing \(name) needs a manage token: choose Allow Editing to get one.")
-        default:
-            throw ConnectError(field: .token, message: "This isn't a manage token. Choose Allow Editing to get one for \(name).")
-        }
-        do {
-            try vault.setToken(token, for: VaultAccount.manage(key.connection, site: key.site))
-        } catch {
-            throw ConnectError(field: .token, message: "Couldn't save the token in the Keychain (\(error)).")
-        }
-        manageTokens += 1
-    }
-
-    /// Allows editing a site by signing in to the install in the browser and allowing the app there,
-    /// rather than copying a token: the install hands back a manage token for this one site.
-    func allowEditing(_ key: SiteKey, timeout: TimeInterval = 300, open: @escaping @MainActor (URL) -> Void) async throws(ConnectError) {
-        guard let state = connections.first(where: { $0.id == key.connection }) else { return }
-        let name = state.sites.first { $0.id == key.site }?.name ?? key.site
-        let grant: OAuthLoopback.Grant
-        do {
-            grant = try await OAuthLoopback.token(base: state.connection.baseURL, scope: "manage", site: key.site, session: session, timeout: timeout, open: open)
-        } catch {
-            throw ConnectError(field: .token, message: error.message)
-        }
-        // The page lets the person pick another site; this window is for one.
-        if let site = grant.site, site != key.site {
-            let other = state.sites.first { $0.id == site }?.name ?? site
-            throw ConnectError(field: .token, message: "That allowed editing \(other), not \(name). Try again and pick \(name) on the page.")
-        }
-        try await addManageToken(key, token: grant.access_token)
-    }
-
-    /// Forgets a site's manage token; the site goes back to read-only.
-    func removeManageToken(_ key: SiteKey) {
-        vault.removeToken(for: VaultAccount.manage(key.connection, site: key.site))
-        manageTokens += 1
     }
 
     // MARK: Connecting

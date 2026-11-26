@@ -5,8 +5,6 @@ struct PopoverActions {
     var openSettings: (SettingsTab) -> Void = { _ in }
     /// A site or a page of a dashboard: the dashboard window or the browser, as Settings says.
     var openDashboard: (URL?) -> Void = { _ in }
-    /// A site's Manage window: its goals, links, and settings.
-    var manageSite: @MainActor @Sendable (SiteKey) -> Void = { _ in }
     var addConnection: () -> Void = {}
     var quit: () -> Void = {}
 }
@@ -29,7 +27,6 @@ struct PopoverView: View {
         .animation(Theme.Motion.push, value: model.isEmpty)
         .panelChrome()
         // Links to a dashboard ("Open in Runlight", the arrow beside a site) go through the app.
-        .environment(\.manageSite, actions.manageSite)
         .environment(\.openURL, OpenURLAction { url in
             actions.openDashboard(url)
             return .handled
@@ -283,16 +280,4 @@ private struct ConnectionBanner: View {
         .environment(AppModel(store: ConnectionStore(directory: URL(filePath: NSTemporaryDirectory())), vault: MemoryVault()))
         .frame(width: Theme.popoverWidth)
         .padding(40)
-}
-
-private struct ManageSiteKey: EnvironmentKey {
-    static let defaultValue: @MainActor @Sendable (SiteKey) -> Void = { _ in }
-}
-
-extension EnvironmentValues {
-    /// Opens a site's Manage window, from the popover or Settings.
-    var manageSite: @MainActor @Sendable (SiteKey) -> Void {
-        get { self[ManageSiteKey.self] }
-        set { self[ManageSiteKey.self] = newValue }
-    }
 }

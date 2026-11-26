@@ -117,43 +117,6 @@ struct RunlightClient: Sendable {
         try await get("/api/links/\(Self.escape(id))", ["site": site, "period": period.rawValue])
     }
 
-    // MARK: Editing (a manage token for the site)
-
-    func createGoal(site: String, _ input: GoalInput) async throws(RunlightError) -> Goal {
-        let response: GoalResponse = try await write("POST", "/api/goals", site: site, body: input)
-        return response.goal
-    }
-
-    /// Replaces a goal's settings. Send every field, as the form has them.
-    func updateGoal(id: String, site: String, _ input: GoalInput) async throws(RunlightError) -> Goal {
-        let response: GoalResponse = try await write("PATCH", "/api/goals/\(Self.escape(id))", site: site, body: input)
-        return response.goal
-    }
-
-    func deleteGoal(id: String, site: String) async throws(RunlightError) {
-        let _: OKResponse = try await write("DELETE", "/api/goals/\(Self.escape(id))", site: site, body: Optional<GoalInput>.none)
-    }
-
-    func createLink(site: String, _ input: LinkInput) async throws(RunlightError) -> ShortLink {
-        let response: LinkResponse = try await write("POST", "/api/links", site: site, body: input)
-        return response.link
-    }
-
-    /// Changes only the fields set in `input`.
-    func updateLink(id: String, site: String, _ input: LinkInput) async throws(RunlightError) -> ShortLink {
-        let response: LinkResponse = try await write("PATCH", "/api/links/\(Self.escape(id))", site: site, body: input)
-        return response.link
-    }
-
-    func deleteLink(id: String, site: String) async throws(RunlightError) {
-        let _: OKResponse = try await write("DELETE", "/api/links/\(Self.escape(id))", site: site, body: Optional<LinkInput>.none)
-    }
-
-    func updateSite(id: String, _ patch: SitePatch) async throws(RunlightError) -> Site {
-        let response: SiteResponse = try await write("PATCH", "/api/sites/\(Self.escape(id))", site: nil, body: patch)
-        return response.site
-    }
-
     // MARK: Plumbing
 
     struct Request: Sendable {
@@ -165,14 +128,6 @@ struct RunlightClient: Sendable {
 
     func get<T: Decodable>(_ path: String, _ query: [String: String] = [:]) async throws(RunlightError) -> T {
         try await Self.send(Request(method: "GET", path: path, query: query), baseURL: baseURL, token: token, session: session)
-    }
-
-    func write<T: Decodable, Body: Encodable>(_ method: String, _ path: String, site: String?, body: Body?) async throws(RunlightError) -> T {
-        var request = Request(method: method, path: path, query: site.map { ["site": $0] } ?? [:])
-        if let body {
-            do { request.body = try Self.encoder.encode(body) } catch { throw .decoding("Couldn't encode the request: \(error)") }
-        }
-        return try await Self.send(request, baseURL: baseURL, token: token, session: session)
     }
 
     private func data(_ request: Request) async throws(RunlightError) -> Data {

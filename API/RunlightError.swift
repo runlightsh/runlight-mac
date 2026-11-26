@@ -57,33 +57,12 @@ enum RunlightError: Error, Equatable, Sendable {
     }
 
     /// The form field an error is about, so the message can sit next to it.
-    var field: Field? {
-        guard let code else { return nil }
-        return Self.fields[code]
-    }
-
-    enum Field: String, Sendable {
-        case name, match, value, url, slug, domain, timezone, retention
-    }
-
-    private static let fields: [String: Field] = [
-        "goal_name": .name, "goal_exists": .name, "goal_event_taken": .name,
-        "goal_event": .match, "goal_page": .match, "goal_page_bad": .match, "goal_selector": .match,
-        "goal_link": .match, "goal_click_taken": .match, "goal_kind": .match,
-        "goal_amount": .value, "goal_currency": .value,
-        "link_url": .url, "link_protocol": .url, "link_long": .url,
-        "link_slug": .slug, "link_taken": .slug, "link_no_slug": .slug, "link_reserved": .slug,
-        "link_domain": .domain,
-        "site_name": .name, "unknown_timezone": .timezone, "retention_bad": .retention,
-    ]
-
     /// Words for the person: the server's own message for API errors, which already names the
     /// field and the fix, and plain sentences for everything else.
     var message: String {
         switch self {
         case .api(_, let problem):
             if problem.code == "unauthorized" { return "Token rejected." }
-            if isReadOnly { return "This token can only read. Add a manage token to make changes." }
             return problem.error
         case .http(let status):
             return status == 502 || status == 504 ? "Couldn't reach this site's install." : "The server answered \(status)."

@@ -84,7 +84,7 @@ private struct SiteSettingsRow: View {
     let site: Site
 
     @Environment(AppModel.self) private var model
-    @Environment(\.manageSite) private var manageSite
+    @Environment(\.openURL) private var openURL
     @State private var handleHovered = false
 
     var body: some View {
@@ -124,10 +124,8 @@ private struct SiteSettingsRow: View {
         }
         .onDrop(of: [.text], delegate: ReorderDrop(target: key, model: model))
         .contextMenu {
-            Button(model.canEdit(key) ? "Manage…" : "Manage (Read-Only)…") { manageSite(key) }
-            if model.canEdit(key) {
-                Button("Remove Manage Token") { model.removeManageToken(key) }
-            }
+            Button("Open in Runlight") { if let url = model.dashboardURL(key) { openURL(url) } }
+            Button("Site Settings in Runlight…") { if let url = model.dashboardURL(key, open: "settings:general") { openURL(url) } }
         }
         .accessibilityAction(named: "Move up") { move(by: -1) }
         .accessibilityAction(named: "Move down") { move(by: 1) }

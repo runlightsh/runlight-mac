@@ -7,9 +7,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: PopoverController?
     private let model = AppModel()
-    private lazy var settings = SettingsWindowController(model: model) { [weak self] key in self?.manageSite(key) }
+    private lazy var settings = SettingsWindowController(model: model) { [weak self] url in self?.openDashboard(url) }
     private lazy var dashboards = DashboardWindows(model: model)
-    private lazy var manageWindows = ManageWindows(model: model)
 
     /// Unit tests load the app as their host; they get no menu bar item.
     private var isRunningTests: Bool {
@@ -24,7 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let actions = PopoverActions(
             openSettings: { [weak self] tab in self?.openSettings(tab) },
             openDashboard: { [weak self] url in self?.openDashboard(url) },
-            manageSite: { [weak self] key in self?.manageSite(key) },
             addConnection: { [weak self] in
                 self?.model.addingConnection = true
                 self?.openSettings(.connections)
@@ -37,10 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover?.onHide = { model.popoverClosed() }
         popover?.onEscape = { withAnimation(Theme.Motion.push) { model.collapse() } }
         model.startPolling()
-        model.connectionRemoved = { [weak self] id in
-            self?.dashboards.close(id)
-            self?.manageWindows.close(connection: id)
-        }
+        model.connectionRemoved = { [weak self] id in self?.dashboards.close(id) }
         UNUserNotificationCenter.current().delegate = self
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -67,15 +62,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // `-OpenDashboard YES` opens the first connection's dashboard window.
         if defaults.bool(forKey: "OpenDashboard") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.openDashboard(nil) }
-        }
-        // `-ManageSite dailyphototips.com` opens that site's Manage window.
-        if let site = defaults.string(forKey: "ManageSite"), let entry = model.allSites.first(where: { $0.site.id == site }) {
-            let key = SiteKey(connection: entry.connection.id, site: site)
-            let pane = defaults.string(forKey: "ManagePane").flatMap(ManagePane.init(rawValue:)) ?? .goals
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.popover?.hide(animated: false)
-                self?.manageWindows.show(key, pane: pane)
-            }
         }
         // `-ExpandSite dailyphototips.com` opens that site's detail.
         if let site = defaults.string(forKey: "ExpandSite"), let entry = model.allSites.first(where: { $0.site.id == site }) {
@@ -128,11 +114,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let base = sender.representedObject as? URL, let connection = model.connection(for: base) else { return }
         popover?.hide(animated: false)
         dashboards.show(connection)
-    }
-
-    func manageSite(_ key: SiteKey) {
-        popover?.hide(animated: false)
-        manageWindows.show(key)
     }
 
     /// Opens a dashboard page in the window or the browser, as Settings says. With no address, the

@@ -10,7 +10,6 @@ struct SiteDetailView: View {
 
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
-    @Environment(\.manageSite) private var manageSite
 
     var body: some View {
         let snapshot = model.snapshot(key)
@@ -32,13 +31,13 @@ struct SiteDetailView: View {
 
             HStack(spacing: Theme.Space.s) {
                 Button {
-                    manageSite(key)
+                    if let url = model.dashboardURL(key, open: "settings:general") { openURL(url) }
                 } label: {
-                    Label("Manage…", systemImage: model.canEdit(key) ? "slider.horizontal.3" : "lock")
+                    Label("Settings…", systemImage: "slider.horizontal.3")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(SoftButtonStyle())
-                .help(model.canEdit(key) ? "Goals, links, and settings for \(site.name)" : "Goals, links, and settings, read-only until a manage token is added")
+                .help("\(site.name)'s goals, links, and settings, in the dashboard")
                 Button {
                     if let url = model.dashboardURL(key) { openURL(url) }
                 } label: {

@@ -119,26 +119,6 @@ struct FixtureDecodingTests {
         #expect(detail.sources?.first?.value == "Google")
     }
 
-    @Test func writes() throws {
-        let created = try Fixture.decode(GoalResponse.self, "goal-create").goal
-        #expect(created.name == "Download preset")
-        #expect(created.fixedValue == nil)
-        let updated = try Fixture.decode(GoalResponse.self, "goal-update").goal
-        #expect(updated.id == created.id)
-        #expect(updated.fixedValue == 5)
-        #expect(try Fixture.decode(OKResponse.self, "goal-delete").ok)
-
-        let link = try Fixture.decode(LinkResponse.self, "link-create").link
-        #expect(link.slug == "dof")
-        let renamed = try Fixture.decode(LinkResponse.self, "link-update").link
-        #expect(renamed.slug == "depth")
-        #expect(renamed.name == "Depth of field calculator")
-        #expect(try Fixture.decode(OKResponse.self, "link-delete").ok)
-
-        let site = try Fixture.decode(SiteResponse.self, "site-update").site
-        #expect(site.name == "Daily Photo Tips")
-        #expect(site.timezone == "America/New_York")
-    }
 }
 
 /// Each error the API can send lands in the right bucket for the app to show.
@@ -174,20 +154,6 @@ struct ErrorMappingTests {
             let error = try #require(await error(name))
             #expect(error.isUnknownSite, "\(name)")
         }
-    }
-
-    @Test(arguments: [
-        ("error-goal-name", RunlightError.Field.name),
-        ("error-goal-page", .match),
-        ("error-link-taken", .slug),
-        ("error-link-url", .url),
-        ("error-retention", .retention),
-        ("error-timezone", .timezone),
-    ])
-    func fieldErrorsNameTheirField(fixture: String, field: RunlightError.Field) async throws {
-        let error = try #require(await error(fixture))
-        #expect(error.field == field)
-        #expect(!error.message.isEmpty)
     }
 
     @Test func linkTakenKeepsItsParams() async throws {
@@ -280,53 +246,6 @@ struct RequestShapeTests {
         _ = try await server.client().series(site: "dailyphototips.com", period: .today, interval: "hour", compare: "previous")
         let url = try #require(server.requests.first?.url?.absoluteString)
         #expect(url.hasSuffix("/api/series?compare=previous&interval=hour&period=today&site=dailyphototips.com"))
-    }
-
-    @Test func createGoalSendsJSON() async throws {
-        let server = StubServer()
-        server.on("POST", "/api/goals", fixture: "goal-create")
-        let goal = try await server.client(token: "rl_manage").createGoal(site: "dailyphototips.com", GoalInput(name: "Download preset", kind: .event, match: "Download"))
-        #expect(goal.name == "Download preset")
-
-        let request = try #require(server.requests.first)
-        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-        #expect(request.url?.query == "site=dailyphototips.com")
-        let body = try #require(server.requestBodies.first)
-        #expect(String(decoding: body, as: UTF8.self) == #"{"currency":"USD","kind":"event","match":"Download","name":"Download preset","valueMode":"none"}"#)
-    }
-
-    @Test func updateGoalWithAFixedValue() async throws {
-        let server = StubServer()
-        server.on("PATCH", "/api/goals/abc", fixture: "goal-update")
-        _ = try await server.client().updateGoal(id: "abc", site: "s", GoalInput(name: "Download a preset", kind: .event, match: "Download", fixedValue: 5))
-        let body = try #require(server.requestBodies.first)
-        #expect(String(decoding: body, as: UTF8.self) == #"{"currency":"USD","kind":"event","match":"Download","name":"Download a preset","value":5,"valueMode":"fixed"}"#)
-    }
-
-    @Test func deletesSendJSONToo() async throws {
-        let server = StubServer()
-        server.on("DELETE", "/api/goals/abc", fixture: "goal-delete")
-        server.on("DELETE", "/api/links/xyz", fixture: "link-delete")
-        try await server.client().deleteGoal(id: "abc", site: "s")
-        try await server.client().deleteLink(id: "xyz", site: "s")
-        #expect(server.requests.count == 2)
-        for request in server.requests {
-            #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-        }
-    }
-
-    @Test func linkInputLeavesOutBlankSlug() throws {
-        let data = try RunlightClient.encoder.encode(LinkInput(url: "https://example.com", slug: "", name: "Example"))
-        #expect(String(decoding: data, as: UTF8.self) == #"{"name":"Example","url":"https:\/\/example.com"}"#)
-    }
-
-    @Test func sitePatchSendsOnlyWhatChanged() throws {
-        let rename = try RunlightClient.encoder.encode(SitePatch(name: "New name"))
-        #expect(String(decoding: rename, as: UTF8.self) == #"{"name":"New name"}"#)
-        let forever = try RunlightClient.encoder.encode(SitePatch(retentionMonths: .some(nil)))
-        #expect(String(decoding: forever, as: UTF8.self) == #"{"retentionMonths":null}"#)
-        let year = try RunlightClient.encoder.encode(SitePatch(retentionMonths: 12))
-        #expect(String(decoding: year, as: UTF8.self) == #"{"retentionMonths":12}"#)
     }
 
     @Test func iconIsNilWhenThereIsNone() async throws {

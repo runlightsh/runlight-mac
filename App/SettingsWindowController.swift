@@ -34,12 +34,16 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private let tabs = NSTabViewController()
 
-    init(model: AppModel, manageSite: @escaping @MainActor @Sendable (SiteKey) -> Void = { _ in }) {
+    /// `open` takes the links Settings follows: a dashboard's go to its window, anything else to the browser.
+    init(model: AppModel, open: @escaping @MainActor @Sendable (URL) -> Void = { NSWorkspace.shared.open($0) }) {
         tabs.tabStyle = .toolbar
         tabs.transitionOptions = [.allowUserInteraction]
         tabs.canPropagateSelectedChildViewControllerTitle = true
         for tab in SettingsTab.allCases {
-            let controller = NSHostingController(rootView: AnyView(Self.view(for: tab).environment(model).environment(\.manageSite, manageSite)))
+            let controller = NSHostingController(rootView: AnyView(Self.view(for: tab).environment(model).environment(\.openURL, OpenURLAction { url in
+                open(url)
+                return .handled
+            })))
             controller.sizingOptions = []
             controller.preferredContentSize = SettingsLayout.paneSize
             controller.title = tab.title

@@ -52,8 +52,6 @@ targets:
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
-        # Signing in to allow editing brings the answer back to 127.0.0.1, so the app listens there briefly.
-        com.apple.security.network.server: true
         # The dashboard window saves its CSV exports to Downloads.
         com.apple.security.files.downloads.read-write: true
     settings:
