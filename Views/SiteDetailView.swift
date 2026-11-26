@@ -23,7 +23,7 @@ struct SiteDetailView: View {
                 timeZone: TimeZone(identifier: site.timezone) ?? .current
             )
             .matchedGeometryEffect(id: key, in: chartSpace)
-            .frame(height: 118)
+            .frame(height: 104)
 
             StatGrid(stats: snapshot?.stats?.stats)
 
@@ -47,7 +47,7 @@ struct SiteDetailView: View {
 
 // MARK: Chart
 
-/// The period so far over the comparison, with a readout of the point under the pointer and the
+/// The period so far over the comparison, with a card for the point under the pointer and the
 /// hours or days along the bottom in the site's own timezone.
 struct SeriesChart: View {
     let values: [Double]
@@ -57,74 +57,108 @@ struct SeriesChart: View {
     let period: Period
     let timeZone: TimeZone
 
-    @State private var hover: Int?
+    @State private var hover: Int? = Self.debugHover
     @State private var width: CGFloat = 0
+
+    /// `-ChartHover 9` starts charts hovered at that slot, for screenshots.
+    private static var debugHover: Int? {
+        #if DEBUG
+        UserDefaults.standard.object(forKey: "ChartHover") == nil ? nil : UserDefaults.standard.integer(forKey: "ChartHover")
+        #else
+        nil
+        #endif
+    }
 
     private static let axis: CGFloat = 14
     private static let inset: CGFloat = 3
 
+    @State private var tipWidth: CGFloat = 0
+
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.xs + 2) {
-            readout
-                .frame(height: 14)
-            Canvas { context, size in draw(&context, size) }
-                .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
-                .onContinuousHover { phase in
-                    switch phase {
-                    case .active(let location): hover = index(at: location.x)
-                    case .ended: hover = nil
-                    }
+        Canvas { context, size in draw(&context, size) }
+            .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
+            .onContinuousHover { phase in
+                switch phase {
+                case .active(let location): hover = index(at: location.x)
+                case .ended: hover = nil
                 }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(period == .today ? "Visitors by hour" : "Visitors by day")
-        .accessibilityValue(spokenPeak)
+            }
+            .overlay(alignment: .topLeading) {
+                if let hover, hover < count {
+                    tooltip(hover)
+                        .onGeometryChange(for: CGFloat.self, of: \.size.width) { tipWidth = $0 }
+                        .offset(x: tipX(hover), y: 4)
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                        .animation(.easeOut(duration: 0.08), value: hover)
+                }
+            }
+            .animation(Theme.Motion.hover, value: hover == nil)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(period == .today ? "Visitors by hour" : "Visitors by day")
+            .accessibilityValue(spokenPeak)
     }
 
     private var count: Int { max(starts.count, values.count, compare.count) }
 
-    /// The legend, or, under the pointer, that point's time and numbers.
-    @ViewBuilder private var readout: some View {
-        HStack(spacing: Theme.Space.s) {
-            if let hover, hover < count {
-                Text(label(hover, long: true))
-                    .font(.system(size: 10.5, weight: .semibold))
-                if hover < values.count {
+    /// The time under the pointer, its visitors, and the comparison's, on a small card.
+    private func tooltip(_ index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label(index, long: true))
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+            if index < values.count {
+                HStack(spacing: 5) {
                     Swatch(dashed: false)
-                    Text(Int(values[hover]).formatted(.number))
-                        .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                    Text("\(Int(values[index]).formatted(.number)) visitors")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                 }
-                if hover < compare.count {
+            }
+            if index < compare.count {
+                HStack(spacing: 5) {
                     Swatch(dashed: true)
-                    Text("\(Int(compare[hover]).formatted(.number)) \(comparisonName.lowercased())")
-                        .font(.system(size: 10.5, design: .rounded))
+                    Text("\(Int(compare[index]).formatted(.number)) \(comparisonName)")
+                        .font(.system(size: 11, design: .rounded))
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                Swatch(dashed: false)
-                Text(period == .today ? "Today" : "This period")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
-                if !compare.isEmpty {
-                    Swatch(dashed: true)
-                        .padding(.leading, Theme.Space.xs)
-                    Text(comparisonName)
-                        .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                 }
             }
-            Spacer(minLength: 0)
         }
-        .animation(nil, value: hover)
+        .fixedSize()
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background {
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                .fill(Theme.panel)
+                .shadow(color: .black.opacity(0.18), radius: 6, y: 2)
+                .overlay {
+                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                        .strokeBorder(Theme.hairline, lineWidth: 1)
+                }
+        }
     }
 
-    private var comparisonName: String { period == .today ? "Yesterday" : "Before" }
+    /// Beside the pointer's line, on whichever side has room, so the card never covers the point.
+    private func tipX(_ index: Int) -> CGFloat {
+        let x = Self.inset + CGFloat(index) / CGFloat(max(count - 1, 1)) * (width - Self.inset * 2)
+        let gap: CGFloat = 10
+        return x + gap + tipWidth <= width ? x + gap : max(0, x - gap - tipWidth)
+    }
+
+    /// What the faint line is, said after its number.
+    private var comparisonName: String {
+        switch period {
+        case .today: "yesterday"
+        case .sevenDays: "a week earlier"
+        case .thirtyDays: "30 days earlier"
+        }
+    }
 
     private func draw(_ context: inout GraphicsContext, _ size: CGSize) {
         guard count > 1 else { return }
-        let plot = CGRect(x: 0, y: 0, width: size.width, height: max(1, size.height - Self.axis))
+        // Room above the top rule for its label.
+        let plot = CGRect(x: 0, y: 11, width: size.width, height: max(1, size.height - Self.axis - 11))
         let top = Self.niceCeiling(max(values.max() ?? 0, compare.max() ?? 0, 1))
         func point(_ index: Int, _ value: Double) -> CGPoint {
             CGPoint(
@@ -207,7 +241,7 @@ struct SeriesChart: View {
     private func label(_ index: Int, long: Bool) -> String {
         guard index < starts.count else { return "" }
         var style: Date.FormatStyle = switch period {
-        case .today: .dateTime.hour()
+        case .today: long ? .dateTime.hour().minute() : .dateTime.hour()
         case .sevenDays: long ? .dateTime.weekday(.abbreviated).month(.abbreviated).day() : .dateTime.weekday(.abbreviated)
         case .thirtyDays: long ? .dateTime.weekday(.abbreviated).month(.abbreviated).day() : .dateTime.month(.abbreviated).day()
         }

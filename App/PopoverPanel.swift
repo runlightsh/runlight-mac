@@ -83,6 +83,7 @@ final class PopoverController: NSObject {
     private let panel = PopoverPanel()
     private let hosting: NSHostingView<AnyView>
     private var outsideClickMonitor: Any?
+    private var ownWindowClickMonitor: Any?
     private var keyMonitor: Any?
     private weak var anchorButton: NSStatusBarButton?
     private(set) var isShown = false
@@ -186,6 +187,16 @@ final class PopoverController: NSObject {
                 self.closedForOutsideClickAt = Date()
             }
         }
+        // Clicks in this app's own windows, like Settings, never reach the global monitor.
+        ownWindowClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
+            MainActor.assumeIsolated {
+                guard let self, let window = event.window else { return }
+                // The popover's own clicks, and the menu bar icon's, which toggles it on mouse up.
+                if window === self.panel || window === self.anchorButton?.window { return }
+                self.hide()
+            }
+            return event
+        }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard event.keyCode == 53 else { return event } // Escape
             MainActor.assumeIsolated {
@@ -200,6 +211,8 @@ final class PopoverController: NSObject {
     private func stopMonitoring() {
         if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        if let ownWindowClickMonitor { NSEvent.removeMonitor(ownWindowClickMonitor) }
+        ownWindowClickMonitor = nil
         outsideClickMonitor = nil
         keyMonitor = nil
         NSWorkspace.shared.notificationCenter.removeObserver(self, name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)

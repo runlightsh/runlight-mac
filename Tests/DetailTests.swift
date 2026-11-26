@@ -178,6 +178,14 @@ struct DetailTests {
         #expect(embedded?.absoluteString == "https://example.com/runlight/?site=example.com&period=today")
     }
 
+    @Test func theLinePassesThroughItsPeaksWithoutOvershooting() {
+        let points = [CGPoint(x: 0, y: 0), CGPoint(x: 10, y: 50), CGPoint(x: 20, y: 0), CGPoint(x: 30, y: 0), CGPoint(x: 40, y: 20)]
+        let bounds = Sparkline.smooth(points).cgPath.boundingBoxOfPath
+        // The curve reaches the peak exactly and never dips below the floor between the zeros.
+        #expect(abs(bounds.maxY - 50) < 0.001)
+        #expect(abs(bounds.minY - 0) < 0.001)
+    }
+
     @Test func detailNumbersRead() {
         #expect(NumberText.duration(48_400) == "48s")
         #expect(NumberText.duration(125_000) == "2m 05s")

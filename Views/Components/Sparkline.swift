@@ -48,7 +48,9 @@ struct Sparkline: View {
         .accessibilityHidden(true)
     }
 
-    /// Curves through the midpoints between points, which reads smooth and never overshoots below zero.
+    /// A smooth curve through every point that never overshoots them (monotone cubic interpolation,
+    /// as Fritsch and Carlson describe it), so a peak on the line is the real peak and the curve
+    /// never dips below zero or above the highest value between two points.
     static func smooth(_ points: [CGPoint]) -> Path {
         var path = Path()
         guard let first = points.first else { return path }
@@ -57,11 +59,41 @@ struct Sparkline: View {
             points.dropFirst().forEach { path.addLine(to: $0) }
             return path
         }
-        for index in 1..<points.count - 1 {
-            let mid = CGPoint(x: (points[index].x + points[index + 1].x) / 2, y: (points[index].y + points[index + 1].y) / 2)
-            path.addQuadCurve(to: mid, control: points[index])
+        let n = points.count
+        var slopes = (0..<n - 1).map { i -> CGFloat in
+            let dx = points[i + 1].x - points[i].x
+            return dx == 0 ? 0 : (points[i + 1].y - points[i].y) / dx
         }
-        path.addLine(to: points[points.count - 1])
+        var tangents = [CGFloat](repeating: 0, count: n)
+        tangents[0] = slopes[0]
+        tangents[n - 1] = slopes[n - 2]
+        for i in 1..<n - 1 {
+            tangents[i] = slopes[i - 1] * slopes[i] <= 0 ? 0 : (slopes[i - 1] + slopes[i]) / 2
+        }
+        for i in 0..<n - 1 {
+            if slopes[i] == 0 {
+                tangents[i] = 0
+                tangents[i + 1] = 0
+                continue
+            }
+            let a = tangents[i] / slopes[i]
+            let b = tangents[i + 1] / slopes[i]
+            let length = a * a + b * b
+            if length > 9 {
+                let scale = 3 / length.squareRoot()
+                tangents[i] = scale * a * slopes[i]
+                tangents[i + 1] = scale * b * slopes[i]
+            }
+        }
+        slopes.removeAll()
+        for i in 0..<n - 1 {
+            let third = (points[i + 1].x - points[i].x) / 3
+            path.addCurve(
+                to: points[i + 1],
+                control1: CGPoint(x: points[i].x + third, y: points[i].y + tangents[i] * third),
+                control2: CGPoint(x: points[i + 1].x - third, y: points[i + 1].y - tangents[i + 1] * third)
+            )
+        }
         return path
     }
 }
