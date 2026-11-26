@@ -89,34 +89,47 @@ struct PopoverView: View {
 }
 
 /// The refresh arrow. While fetching it turns at a steady pace, and when the fetching ends it
-/// finishes the turn it is on, so it always comes to rest upright rather than snapping back.
+/// finishes the turn it is on, so it comes to rest upright rather than snapping back. The angle comes
+/// from the clock, not from chained animations, so a hidden popover never spins it in a loop.
 private struct RefreshIcon: View {
     let spinning: Bool
 
-    @State private var angle: Double = 0
-    @State private var wanted = false
-    @State private var turning = false
+    @State private var start: Date?
+    @State private var stopAt: Date?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    private static let turn: TimeInterval = 0.8
+
     var body: some View {
-        Image(systemName: "arrow.clockwise")
-            .rotationEffect(.degrees(angle))
-            .opacity(reduceMotion && spinning ? 0.5 : 1)
-            .onChange(of: spinning, initial: true) { _, now in
-                wanted = now
-                if now { turn() }
+        TimelineView(.animation(paused: start == nil)) { context in
+            Image(systemName: "arrow.clockwise")
+                .rotationEffect(.degrees(angle(at: context.date)))
+        }
+        .opacity(reduceMotion && spinning ? 0.5 : 1)
+        .onChange(of: spinning, initial: true) { _, now in
+            if now {
+                guard !reduceMotion else { return }
+                if start == nil { start = .now }
+                stopAt = nil
+            } else if let start {
+                let turns = max(1, (Date.now.timeIntervalSince(start) / Self.turn).rounded(.up))
+                let end = start.addingTimeInterval(turns * Self.turn)
+                stopAt = end
+                Task {
+                    try? await Task.sleep(for: .seconds(max(0, end.timeIntervalSinceNow)))
+                    if stopAt == end {
+                        self.start = nil
+                        stopAt = nil
+                    }
+                }
             }
+        }
     }
 
-    private func turn() {
-        guard !turning, !reduceMotion else { return }
-        turning = true
-        withAnimation(.linear(duration: 0.8)) {
-            angle += 360
-        } completion: {
-            turning = false
-            if wanted { turn() } else { angle = 0 }
-        }
+    private func angle(at date: Date) -> Double {
+        guard let start else { return 0 }
+        if let stopAt, date >= stopAt { return 0 }
+        return date.timeIntervalSince(start) / Self.turn * 360
     }
 }
 
