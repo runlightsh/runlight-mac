@@ -44,7 +44,7 @@ struct ManageTokenTests {
             try await model.addManageToken(tulvane, token: "rl_manage")
             Issue.record("Expected to refuse another site's token")
         } catch {
-            #expect(error.message.hasPrefix("This manage token is for DailyPhotoTips."))
+            #expect(error.message.hasPrefix("This manage token is for DailyPhotoTips, not Tulvane."))
         }
         #expect(!model.canEdit(tulvane))
     }

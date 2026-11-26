@@ -371,11 +371,11 @@ final class AppModel {
             break
         case .manage:
             let other = state.sites.first { $0.id == info.site }?.name ?? info.site
-            throw ConnectError(field: .token, message: "This manage token is for \(other). Make one for \(name) in the dashboard, under Settings, MCP & API.")
+            throw ConnectError(field: .token, message: "This manage token is for \(other), not \(name). Choose Allow Editing to get one for \(name).")
         case .read:
-            throw ConnectError(field: .token, message: "This is a read-only token. Editing \(name) needs a manage token made for it, under Settings, MCP & API.")
+            throw ConnectError(field: .token, message: "This is a read-only token. Editing \(name) needs a manage token: choose Allow Editing to get one.")
         default:
-            throw ConnectError(field: .token, message: "This isn't a manage token. Make one for \(name) in the dashboard, under Settings, MCP & API.")
+            throw ConnectError(field: .token, message: "This isn't a manage token. Choose Allow Editing to get one for \(name).")
         }
         do {
             try vault.setToken(token, for: VaultAccount.manage(key.connection, site: key.site))

@@ -231,7 +231,7 @@ struct ManageTokenSheet: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        SheetFrame(title: "Add a Manage Token", detail: "In the dashboard, open Settings, then MCP & API, and make a manage token for \(siteName). It can change only this site's goals, links, and settings.") {
+        SheetFrame(title: "Paste a Manage Token", detail: "For a manage token you already have for \(siteName), from a script or the dashboard. It can change only this site's goals, links, and settings. To get one without copying anything, cancel and choose Allow Editing.") {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 RunlightField(label: "Manage token", placeholder: "rl_…", text: $token, secure: true, error: error, focused: $focused, onSubmit: save)
                 HStack {
