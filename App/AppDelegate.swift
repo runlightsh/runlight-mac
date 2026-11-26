@@ -7,11 +7,25 @@ import UserNotifications
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: PopoverController?
-    private let model = AppModel()
+    private let model = AppDelegate.makeModel()
     private lazy var settings = SettingsWindowController(model: model, updates: Updates(updater: updater.updater)) { [weak self] url in self?.openDashboard(url) }
     private lazy var dashboards = DashboardWindows(model: model)
     /// Updates, from the feed on runlight.sh. Not started while tests run.
     lazy var updater = SPUStandardUpdaterController(startingUpdater: !isRunningTests, updaterDelegate: nil, userDriverDelegate: nil)
+
+    /// The app's model. A debug run given `-DemoAddress <url> -DemoToken <token>` (from
+    /// scripts/demo/serve.mts) gets a throwaway one instead, with a scratch store, a memory vault,
+    /// and its own defaults, so screenshots of made-up sites never read or change the real ones.
+    private static func makeModel() -> AppModel {
+        #if DEBUG
+        if UserDefaults.standard.string(forKey: "DemoAddress") != nil, let defaults = UserDefaults(suiteName: "sh.runlight.mac.demo") {
+            defaults.removePersistentDomain(forName: "sh.runlight.mac.demo")
+            let scratch = FileManager.default.temporaryDirectory.appending(path: "runlight-demo-\(UUID().uuidString)", directoryHint: .isDirectory)
+            return AppModel(store: ConnectionStore(directory: scratch), vault: MemoryVault(), defaults: defaults)
+        }
+        #endif
+        return AppModel()
+    }
 
     /// Unit tests load the app as their host; they get no menu bar item.
     private var isRunningTests: Bool {
@@ -68,8 +82,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.openDashboard(nil) }
         }
         // `-ExpandSite dailyphototips.com` opens that site's detail.
-        if let site = defaults.string(forKey: "ExpandSite"), let entry = model.allSites.first(where: { $0.site.id == site }) {
-            model.expandedSite = SiteKey(connection: entry.connection.id, site: site)
+        let expand = { [model] in
+            if let site = defaults.string(forKey: "ExpandSite"), let entry = model.allSites.first(where: { $0.site.id == site || $0.site.name == site }) {
+                model.expandedSite = SiteKey(connection: entry.connection.id, site: entry.site.id)
+            }
+        }
+        if let address = defaults.string(forKey: "DemoAddress"), let token = defaults.string(forKey: "DemoToken") {
+            Task { [model] in
+                _ = try? await model.connect(address: address, token: token)
+                expand()
+            }
+        } else {
+            expand()
         }
         if let tab = defaults.string(forKey: "OpenSettings").flatMap(SettingsTab.init(rawValue:)) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.openSettings(tab) }
