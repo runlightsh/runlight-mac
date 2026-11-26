@@ -99,21 +99,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// the first numbers arrive.
     private func followMenuBarNumber() {
         withObservationTracking {
-            updateMenuBarNumber(model.visitorsToday)
+            updateMenuBarNumber(model.totals.visitors, period: model.period)
         } onChange: { [weak self] in
             DispatchQueue.main.async { self?.followMenuBarNumber() }
         }
     }
 
-    private func updateMenuBarNumber(_ visitors: Int?) {
+    /// Total site visits for the period the popover shows, so the two always agree.
+    private func updateMenuBarNumber(_ visitors: Int?, period: Period) {
         guard let button = statusItem?.button else { return }
         let text = visitors.map { " " + NumberText.compact($0) } ?? ""
+        let when = period == .today ? "today" : "in the last \(period.title)"
+        button.toolTip = visitors.map { "\($0.formatted(.number)) total site visits \(when), across every site" }
+        button.setAccessibilityLabel(visitors.map { "Runlight, \($0) total site visits \(when)" } ?? "Runlight")
         guard button.title != text else { return }
         button.attributedTitle = NSAttributedString(string: text, attributes: [
             .font: NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .medium),
             .baselineOffset: 0.5,
         ])
-        button.setAccessibilityLabel(visitors.map { "Runlight, \($0) visitors today" } ?? "Runlight")
     }
 
     func openSettings(_ tab: SettingsTab?) {

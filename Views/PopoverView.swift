@@ -12,7 +12,6 @@ struct PopoverView: View {
     let actions: PopoverActions
 
     @Environment(AppModel.self) private var model
-    @State private var spin = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -63,20 +62,11 @@ struct PopoverView: View {
             Spacer()
             if !model.isEmpty {
                 Button { model.refreshNow() } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .rotationEffect(.degrees(spin ? 360 : 0))
+                    RefreshIcon(spinning: model.isRefreshing)
                 }
                 .help("Refresh")
-                .accessibilityLabel("Refresh")
+                .accessibilityLabel(model.isRefreshing ? "Refreshing" : "Refresh")
                 .keyboardShortcut("r", modifiers: .command)
-                .disabled(model.isRefreshing)
-                .onChange(of: model.isRefreshing) { _, refreshing in
-                    if refreshing {
-                        withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) { spin = true }
-                    } else {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { spin = false }
-                    }
-                }
             }
             Button { actions.openSettings(.general) } label: {
                 Image(systemName: "gearshape")
@@ -95,6 +85,38 @@ struct PopoverView: View {
         .padding(.leading, Theme.Space.l)
         .padding(.trailing, Theme.Space.s)
         .frame(height: 38)
+    }
+}
+
+/// The refresh arrow. While fetching it turns at a steady pace, and when the fetching ends it
+/// finishes the turn it is on, so it always comes to rest upright rather than snapping back.
+private struct RefreshIcon: View {
+    let spinning: Bool
+
+    @State private var angle: Double = 0
+    @State private var wanted = false
+    @State private var turning = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Image(systemName: "arrow.clockwise")
+            .rotationEffect(.degrees(angle))
+            .opacity(reduceMotion && spinning ? 0.5 : 1)
+            .onChange(of: spinning, initial: true) { _, now in
+                wanted = now
+                if now { turn() }
+            }
+    }
+
+    private func turn() {
+        guard !turning, !reduceMotion else { return }
+        turning = true
+        withAnimation(.linear(duration: 0.8)) {
+            angle += 360
+        } completion: {
+            turning = false
+            if wanted { turn() } else { angle = 0 }
+        }
     }
 }
 

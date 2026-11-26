@@ -105,6 +105,44 @@ struct DetailTests {
         #expect(model.expandedSite == nil)
     }
 
+    @Test func refreshingHoldsThroughGapsBetweenFetches() async throws {
+        let (_, model, key) = try await connected()
+        #expect(!model.isRefreshing)
+        await model.perform(.stats(key, .today))
+        // Done fetching, but a staggered round may start the next one any moment.
+        #expect(model.inFlight == 0)
+        #expect(model.isRefreshing)
+        model.inFlight += 1
+        try await Task.sleep(for: .milliseconds(500))
+        #expect(model.isRefreshing)
+        model.inFlight -= 1
+        try await Task.sleep(for: .milliseconds(700))
+        #expect(!model.isRefreshing)
+    }
+
+    @Test func theChosenPeriodIsRememberedAcrossLaunches() async throws {
+        let (harness, model, _) = try await connected()
+        model.period = .thirtyDays
+        #expect(harness.model().period == .thirtyDays)
+        model.period = .sevenDays
+        #expect(harness.model().period == .sevenDays)
+    }
+
+    @Test func theMenuBarTotalFollowsThePeriod() async throws {
+        let (harness, model, key) = try await connected()
+        harness.server.on("GET", "/api/stats") { request in
+            .init(status: 200, body: Fixture.data(request.url?.query?.contains("period=7d") == true ? "stats-7d" : "stats-today"))
+        }
+        await model.perform(.stats(key, .today))
+        await model.perform(.stats(key, .sevenDays))
+        model.period = .today
+        let today = try #require(model.totals.visitors)
+        model.period = .sevenDays
+        let week = try #require(model.totals.visitors)
+        #expect(today == 1273)
+        #expect(week > today)
+    }
+
     @Test func dashboardLinksOpenTheSiteOnThePeriodShown() {
         let hub = AppModel.dashboardURL(base: URL(string: "https://analytics.joncp.dev")!, site: "dailyphototips.com", period: .sevenDays)
         #expect(hub?.absoluteString == "https://analytics.joncp.dev/?site=dailyphototips.com&period=7d")

@@ -88,7 +88,8 @@ final class Poller {
     }
 
     /// Makes every number job for the period on screen due now if its copy is older than `age`.
-    func refresh(olderThan age: TimeInterval) {
+    func refresh(olderThan age: TimeInterval, stagger: TimeInterval? = nil) {
+        let stagger = stagger ?? self.stagger
         let now = model.now()
         var index = 0
         for job in due.keys {

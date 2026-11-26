@@ -116,8 +116,14 @@ final class AppModel {
     var details: [SiteKey: SiteDetail] = [:]
     /// Whether the popover is on screen. Live numbers are fetched only while it is.
     @ObservationIgnored private(set) var popoverVisible = false
-    /// How many fetches are under way, for the refresh button.
-    var inFlight = 0
+    /// How many fetches are under way.
+    var inFlight = 0 {
+        didSet { settleRefreshing() }
+    }
+    /// Whether the refresh button turns: true while fetches are under way, and until none has run
+    /// for a moment, so a round of quick staggered fetches reads as one refresh rather than a flicker.
+    var isRefreshing = false
+    @ObservationIgnored var settleTask: Task<Void, Never>?
     /// True while the network is down; numbers stay, greyed.
     var offline = false
 

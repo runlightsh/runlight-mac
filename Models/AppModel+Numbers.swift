@@ -70,7 +70,18 @@ extension AppModel {
         (snapshots[period] ?? [:]).filter { key, _ in isLive(key) }.values.compactMap(\.updatedAt).max()
     }
 
-    var isRefreshing: Bool { inFlight > 0 }
+    func settleRefreshing() {
+        settleTask?.cancel()
+        if inFlight > 0 {
+            if !isRefreshing { isRefreshing = true }
+            return
+        }
+        settleTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled, let self, inFlight == 0 else { return }
+            isRefreshing = false
+        }
+    }
 
     /// Still on its install and switched on.
     private func isLive(_ key: SiteKey) -> Bool {
@@ -213,6 +224,6 @@ extension AppModel {
 
     /// The refresh button: everything on screen, now.
     func refreshNow() {
-        poller?.refresh(olderThan: 0)
+        poller?.refresh(olderThan: 0, stagger: 0.02)
     }
 }
