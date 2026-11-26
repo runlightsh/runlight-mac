@@ -128,6 +128,13 @@ struct DetailTests {
         #expect(harness.model().period == .sevenDays)
     }
 
+    @Test func theMenuBarTotalCanBeHiddenAndStaysHidden() async throws {
+        let (harness, model, _) = try await connected()
+        #expect(model.showsMenuBarTotal)
+        model.showsMenuBarTotal = false
+        #expect(!harness.model().showsMenuBarTotal)
+    }
+
     @Test func theMenuBarTotalFollowsThePeriod() async throws {
         let (harness, model, key) = try await connected()
         harness.server.on("GET", "/api/stats") { request in

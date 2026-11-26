@@ -95,6 +95,10 @@ final class AppModel {
             poller?.reconcile()
         }
     }
+    /// Whether the menu bar shows total site visits beside the icon, or the icon alone.
+    var showsMenuBarTotal = true {
+        didSet { defaults.set(showsMenuBarTotal, forKey: "menuBarTotal") }
+    }
     /// The last good numbers for each period and site.
     var snapshots: [Period: [SiteKey: SiteSnapshot]] = [:]
     /// Why a site's last fetch failed, until one works.
@@ -141,6 +145,7 @@ final class AppModel {
         self.store = store
         self.defaults = defaults
         period = Period(rawValue: defaults.string(forKey: "period") ?? "") ?? .today
+        showsMenuBarTotal = defaults.object(forKey: "menuBarTotal") as? Bool ?? true
         hiddenSites = Set((defaults.stringArray(forKey: "hiddenSites") ?? []).compactMap(SiteKey.init(storageKey:)))
         self.vault = vault
         self.session = session

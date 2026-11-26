@@ -99,7 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// the first numbers arrive.
     private func followMenuBarNumber() {
         withObservationTracking {
-            updateMenuBarNumber(model.totals.visitors, period: model.period)
+            updateMenuBarNumber(model.showsMenuBarTotal ? model.totals.visitors : nil, period: model.period)
         } onChange: { [weak self] in
             DispatchQueue.main.async { self?.followMenuBarNumber() }
         }

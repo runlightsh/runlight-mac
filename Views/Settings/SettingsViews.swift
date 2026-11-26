@@ -6,6 +6,7 @@ enum SettingsLayout {
 }
 
 struct GeneralSettingsView: View {
+    @Environment(AppModel.self) private var model
     @State private var launchAtLogin = LaunchAtLogin()
     @AppStorage(AppAppearance.defaultsKey) private var appearance = AppAppearance.system
 
@@ -18,6 +19,13 @@ struct GeneralSettingsView: View {
                 }
             }
             .onChange(of: appearance) { _, new in AppAppearance.apply(new) }
+            Section {
+                @Bindable var model = model
+                Toggle(isOn: $model.showsMenuBarTotal) {
+                    Text("Show total site visits in the menu bar")
+                    Text("Beside the icon, for the period chosen in the popover.")
+                }
+            }
             Section {
                 Toggle(isOn: Binding(get: { launchAtLogin.isOn }, set: { launchAtLogin.set($0) })) {
                     Text("Open Runlight at login")
