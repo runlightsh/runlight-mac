@@ -13,10 +13,22 @@ enum Job: Hashable, Sendable {
     case goals(SiteKey, Period)
     case icon(SiteKey)
     case sites(UUID)
+    /// Who's on now: only for the open site, while the popover is up.
+    case realtime(SiteKey)
+    /// Top pages and sources for the open site and period.
+    case breakdown(SiteKey, Period)
+
+    /// Fetched for the open site only.
+    var isDetail: Bool {
+        switch self {
+        case .realtime, .breakdown: true
+        default: false
+        }
+    }
 
     var connection: UUID {
         switch self {
-        case .stats(let key, _), .series(let key, _), .goals(let key, _), .icon(let key): key.connection
+        case .stats(let key, _), .series(let key, _), .goals(let key, _), .icon(let key), .realtime(let key), .breakdown(let key, _): key.connection
         case .sites(let id): id
         }
     }
@@ -71,8 +83,10 @@ extension AppModel {
     @discardableResult
     func perform(_ job: Job) async -> Bool {
         guard let client = client(for: job.connection) else { return false }
-        inFlight += 1
-        defer { inFlight -= 1 }
+        // Live numbers come every 15 seconds; spinning the refresh button for each would never stop.
+        let counted = if case .realtime = job { false } else { true }
+        if counted { inFlight += 1 }
+        defer { if counted { inFlight -= 1 } }
         do throws(RunlightError) {
             switch job {
             case .stats(let key, let period):
@@ -88,6 +102,14 @@ extension AppModel {
                 let data = try await client.icon(site: key.site) ?? Data()
                 icons[key] = IconEntry(data: data, checkedAt: now())
                 saveIcons(key.connection)
+            case .realtime(let key):
+                let realtime = try await client.realtime(site: key.site)
+                details[key, default: SiteDetail()].realtime = realtime
+                details[key, default: SiteDetail()].realtimeAt = now()
+            case .breakdown(let key, let period):
+                let pages = try await client.breakdown(site: key.site, period: period, dimension: .page, limit: 5)
+                let sources = try await client.breakdown(site: key.site, period: period, dimension: .source, limit: 5)
+                details[key, default: SiteDetail()].breakdowns[period] = SiteDetail.Breakdowns(pages: pages.rows, sources: sources.rows, at: now())
             case .sites(let id):
                 await refreshSites(id)
                 return connections.first { $0.id == id }?.status.isOK ?? false
@@ -129,7 +151,8 @@ extension AppModel {
         case .icon(let key):
             // No icon is an answer too; try again in a week.
             icons[key] = IconEntry(data: Data(), checkedAt: now())
-        case .sites:
+        case .sites, .realtime, .breakdown:
+            // The detail keeps what it last had; the next round tries again.
             break
         }
     }
@@ -179,7 +202,13 @@ extension AppModel {
 
     /// The popover opened: anything older than a minute is fetched now, so it's fresh within seconds.
     func popoverOpened() {
+        setPopoverVisible(true)
         poller?.refresh(olderThan: 60)
+    }
+
+    /// Live numbers stop when the popover goes away.
+    func popoverClosed() {
+        setPopoverVisible(false)
     }
 
     /// The refresh button: everything on screen, now.

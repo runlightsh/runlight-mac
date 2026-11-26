@@ -89,6 +89,8 @@ final class PopoverController: NSObject {
 
     var onShow: (() -> Void)?
     var onHide: (() -> Void)?
+    /// Escape asks this first; when it handles the key (folding an open site away), the popover stays.
+    var onEscape: (() -> Bool)?
 
     init<Content: View>(@ViewBuilder content: () -> Content) {
         let root = content()
@@ -170,7 +172,10 @@ final class PopoverController: NSObject {
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard event.keyCode == 53 else { return event } // Escape
-            MainActor.assumeIsolated { self?.hide() }
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                if self.onEscape?() != true { self.hide() }
+            }
             return nil
         }
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(spaceChanged), name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)

@@ -108,6 +108,14 @@ final class AppModel {
             poller?.reconcile()
         }
     }
+    /// The site opened up under its row, if any. Only one at a time.
+    var expandedSite: SiteKey? {
+        didSet { if expandedSite != oldValue { poller?.reconcile() } }
+    }
+    /// Live visitors and top pages and sources, fetched only for the site that's open.
+    var details: [SiteKey: SiteDetail] = [:]
+    /// Whether the popover is on screen. Live numbers are fetched only while it is.
+    @ObservationIgnored private(set) var popoverVisible = false
     /// How many fetches are under way, for the refresh button.
     var inFlight = 0
     /// True while the network is down; numbers stay, greyed.
@@ -152,7 +160,44 @@ final class AppModel {
     func isShown(_ key: SiteKey) -> Bool { !hiddenSites.contains(key) }
 
     func setShown(_ key: SiteKey, _ shown: Bool) {
+        if !shown, expandedSite == key { expandedSite = nil }
         if shown { hiddenSites.remove(key) } else { hiddenSites.insert(key) }
+    }
+
+    /// The site whose live numbers should be fetched now: the open one, while the popover is up.
+    var watchedSite: SiteKey? {
+        guard popoverVisible, let key = expandedSite, isShown(key) else { return nil }
+        return connections.contains { $0.id == key.connection && $0.sites.contains { $0.id == key.site } } ? key : nil
+    }
+
+    func toggleExpanded(_ key: SiteKey) {
+        expandedSite = expandedSite == key ? nil : key
+    }
+
+    /// Escape folds an open site away before it closes the popover. Returns whether it did.
+    func collapse() -> Bool {
+        guard expandedSite != nil else { return false }
+        expandedSite = nil
+        return true
+    }
+
+    func setPopoverVisible(_ visible: Bool) {
+        guard popoverVisible != visible else { return }
+        popoverVisible = visible
+        poller?.reconcile()
+    }
+
+    /// The site in the web dashboard, on the same period.
+    func dashboardURL(_ key: SiteKey) -> URL? {
+        connections.first { $0.id == key.connection }.flatMap { Self.dashboardURL(base: $0.connection.baseURL, site: key.site, period: period) }
+    }
+
+    /// The dashboard is served where the API is, and reads the site and period from the query.
+    static func dashboardURL(base: URL, site: String, period: Period) -> URL? {
+        guard var components = URLComponents(url: base, resolvingAgainstBaseURL: false) else { return nil }
+        if !components.percentEncodedPath.hasSuffix("/") { components.percentEncodedPath += "/" }
+        components.queryItems = [URLQueryItem(name: "site", value: site), URLQueryItem(name: "period", value: period.rawValue)]
+        return components.url
     }
 
     func client(for id: UUID) -> RunlightClient? {
@@ -258,6 +303,8 @@ final class AppModel {
         for period in Period.allCases { snapshots[period] = snapshots[period]?.filter { $0.key.connection != id } }
         failures = failures.filter { $0.key.connection != id }
         icons = icons.filter { $0.key.connection != id }
+        details = details.filter { $0.key.connection != id }
+        if expandedSite?.connection == id { expandedSite = nil }
         hiddenSites = hiddenSites.filter { $0.connection != id }
         persist()
         poller?.reconcile()

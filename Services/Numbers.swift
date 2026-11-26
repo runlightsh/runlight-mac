@@ -131,6 +131,22 @@ enum NumberText {
         return "\(Int(percent.rounded()))%"
     }
 
+    /// An average visit from milliseconds: "48s", "2m 05s", or "1h 12m".
+    static func duration(_ milliseconds: Double) -> String {
+        let seconds = Int((milliseconds / 1000).rounded())
+        if seconds < 60 { return "\(seconds)s" }
+        if seconds < 3600 { return "\(seconds / 60)m \(String(format: "%02d", seconds % 60))s" }
+        return "\(seconds / 3600)h \(String(format: "%02d", seconds % 3600 / 60))m"
+    }
+
+    /// A fraction from 0 to 1 as a share: "41%", "7.3%" under ten, "<0.1%" for a sliver.
+    static func share(_ fraction: Double) -> String {
+        let percent = fraction * 100
+        if percent > 0 && percent < 0.1 { return "<0.1%" }
+        if percent < 10 && percent.rounded() != percent { return "\(percent.formatted(.number.precision(.fractionLength(1))))%" }
+        return "\(Int(percent.rounded()))%"
+    }
+
     /// The words VoiceOver reads for a change.
     static func spokenChange(_ change: Double?, period: Period) -> String {
         guard let change else { return "" }

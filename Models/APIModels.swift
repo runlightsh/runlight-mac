@@ -151,7 +151,7 @@ struct BreakdownRow: Codable, Equatable, Sendable {
     var visitDuration: Double?
 }
 
-struct BreakdownResponse: Codable, Sendable {
+struct BreakdownResponse: Codable, Equatable, Sendable {
     let site: String
     let range: ReportRange
     let dimension: String
@@ -181,7 +181,7 @@ struct RecentActivity: Codable, Equatable, Sendable {
 }
 
 /// The last five minutes, with pageviews for each of the last thirty.
-struct Realtime: Codable, Sendable {
+struct Realtime: Codable, Equatable, Sendable {
     let visitors: Int
     let pages: [ValueCount]
     let sources: [ValueCount]

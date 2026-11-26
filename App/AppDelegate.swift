@@ -29,6 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let model = model
         popover = PopoverController { PopoverView(actions: actions).environment(model) }
         popover?.onShow = { model.popoverOpened() }
+        popover?.onHide = { model.popoverClosed() }
+        popover?.onEscape = { withAnimation(Theme.Motion.push) { model.collapse() } }
         model.startPolling()
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -45,13 +47,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         followMenuBarNumber()
 
         #if DEBUG
-        // For screenshots and UI checks: `-OpenPopover YES`, `-OpenSettings general` (with `-AddConnection YES` for the sheet), and
+        // For screenshots and UI checks: `-OpenPopover YES`, `-ExpandSite <site>`, `-OpenSettings general` (with `-AddConnection YES` for the sheet), and
         // `-appearance dark` (read by AppAppearance, so it is not debug only).
         let defaults = UserDefaults.standard
         if defaults.bool(forKey: "OpenPopover"), let button = item.button {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.popover?.show(from: button) }
         }
         if defaults.bool(forKey: "AddConnection") { model.addingConnection = true }
+        // `-ExpandSite dailyphototips.com` opens that site's detail.
+        if let site = defaults.string(forKey: "ExpandSite"), let entry = model.allSites.first(where: { $0.site.id == site }) {
+            model.expandedSite = SiteKey(connection: entry.connection.id, site: site)
+        }
         if let tab = defaults.string(forKey: "OpenSettings").flatMap(SettingsTab.init(rawValue:)) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.openSettings(tab) }
         }

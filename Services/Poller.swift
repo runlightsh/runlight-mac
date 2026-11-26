@@ -4,7 +4,8 @@ import Foundation
 /// connection's site list) has its own interval; the poller sleeps until the next one is due rather
 /// than ticking, runs a few at a time, and staggers new jobs so fourteen sites never fire at once.
 ///
-/// Milestone 6 adds pausing on sleep and offline, Low Power Mode, and backing off after failures.
+/// The open site adds its live numbers every 15 seconds and its top lists every 2 minutes, only
+/// while the popover is up. Milestone 6 adds pausing on sleep and offline, Low Power Mode, and backing off after failures.
 @MainActor
 final class Poller {
     struct Intervals {
@@ -13,6 +14,9 @@ final class Poller {
         var goals: TimeInterval = 300
         var sites: TimeInterval = 6 * 3600
         var icon: TimeInterval = 7 * 86400
+        /// While a site is open.
+        var realtime: TimeInterval = 15
+        var breakdown: TimeInterval = 120
     }
 
     var intervals = Intervals()
@@ -57,6 +61,12 @@ final class Poller {
                 fresh += 1
             }
         }
+        // The open site's live numbers and top lists come first, and only while the popover is up.
+        if let key = model.watchedSite {
+            let detail = model.details[key]
+            want(.realtime(key), last: detail?.realtimeAt, every: intervals.realtime)
+            want(.breakdown(key, model.period), last: detail?.breakdowns[model.period]?.at, every: intervals.breakdown)
+        }
         let periods = Set([Period.today, model.period])
         for state in model.connections {
             want(.sites(state.id), last: state.lastChecked, every: intervals.sites)
@@ -86,6 +96,8 @@ final class Poller {
             case .stats(let key, let period): (model.snapshot(key, period)?.statsAt, period)
             case .series(let key, let period): (model.snapshot(key, period)?.seriesAt, period)
             case .goals(let key, let period): (model.snapshot(key, period)?.goalsAt, period)
+            case .realtime(let key): (model.details[key]?.realtimeAt, model.period)
+            case .breakdown(let key, let period): (model.details[key]?.breakdowns[period]?.at, period)
             default: (nil, nil)
             }
             guard let period, period == model.period || period == .today else { continue }
@@ -106,7 +118,10 @@ final class Poller {
     private func run() async {
         while !Task.isCancelled {
             let now = model.now()
-            let ready = due.filter { $0.value <= now && !running.contains($0.key) }.sorted { $0.value < $1.value }
+            // The open site's jobs go first: someone is looking at them.
+            let ready = due.filter { $0.value <= now && !running.contains($0.key) }.sorted {
+                $0.key.isDetail != $1.key.isDetail ? $0.key.isDetail : $0.value < $1.value
+            }
             for (job, _) in ready.prefix(max(0, maxConcurrent - running.count)) {
                 running.insert(job)
                 Task { [weak self] in
@@ -134,11 +149,14 @@ final class Poller {
         case .goals: intervals.goals
         case .sites: intervals.sites
         case .icon: intervals.icon
+        case .realtime: intervals.realtime
+        case .breakdown: intervals.breakdown
         }
         // A failed icon or site list waits its full interval; a failed number tries again in a minute.
         if !worked, case .stats = job { return 60 }
         if !worked, case .series = job { return 60 }
         if !worked, case .goals = job { return 60 }
+        if !worked, case .breakdown = job { return 60 }
         return base
     }
 }
