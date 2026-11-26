@@ -107,9 +107,13 @@ git add project.yml
 git commit -q -m "Release $VERSION"
 git tag "v$VERSION"
 
+# The same DMG under a name that never changes, for releases/latest/download/Runlight.dmg (which the
+# download link on runlight.sh/mac goes to). Kept out of $ARCHIVES, where generate_appcast would list it.
+cp "$DMG" "$OUT/Runlight.dmg"
+
 step "Ready. To publish:"
 cat <<NEXT
   git push origin main v$VERSION
-  gh release create v$VERSION "$DMG" --repo runlightsh/runlight-mac --title "Runlight for Mac $VERSION" --notes "..."
+  gh release create v$VERSION "$DMG" "$OUT/Runlight.dmg" --repo runlightsh/runlight-mac --title "Runlight for Mac $VERSION" --notes "..."
   cp "$OUT/appcast.xml" ../runlight-website/site/src/root/mac/appcast.xml   (then commit and push the website)
 NEXT
