@@ -162,6 +162,7 @@ private struct StatusPill: View {
         case .ok: testedOK ? "Working" : "Connected"
         case .checking: "Checking"
         case .tokenRejected: "Token rejected"
+        case .tokenMissing: "Token missing"
         case .offline: "Offline"
         case .problem: "Unreachable"
         }
@@ -171,7 +172,7 @@ private struct StatusPill: View {
         switch status {
         case .ok: Theme.up
         case .checking, .offline: .secondary
-        case .tokenRejected, .problem: Theme.down
+        case .tokenRejected, .tokenMissing, .problem: Theme.down
         }
     }
 }

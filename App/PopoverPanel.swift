@@ -137,11 +137,17 @@ final class PopoverController: NSObject {
         onShow?()
     }
 
-    func hide() {
+    func hide(animated: Bool = true) {
         guard isShown else { return }
         isShown = false
         stopMonitoring()
         anchorButton?.highlight(false)
+        if !animated {
+            panel.orderOut(nil)
+            panel.alphaValue = 0
+            onHide?()
+            return
+        }
         NSAnimationContext.runAnimationGroup { context in
             context.duration = Theme.Motion.panelOut
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)

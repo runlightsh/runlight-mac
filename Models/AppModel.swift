@@ -44,10 +44,14 @@ enum ConnectionStatus: Equatable, Sendable {
     case ok
     case checking
     case tokenRejected
+    /// The Keychain has no token for it, as after a token is removed by hand.
+    case tokenMissing
     case offline
     case problem(String)
 
     var isOK: Bool { self == .ok }
+    /// Fixed only by a new token.
+    var needsToken: Bool { self == .tokenRejected || self == .tokenMissing }
 }
 
 /// One install as the app sees it: its details, its sites, and how it's doing.
@@ -206,7 +210,10 @@ final class AppModel {
         self.session = session
         self.now = now
         connections = store.loadConnections().map { connection in
-            ConnectionState(connection: connection, sites: store.cached([Site].self, Self.sitesKey(connection.id)) ?? [], status: .ok)
+            ConnectionState(
+                connection: connection, sites: store.cached([Site].self, Self.sitesKey(connection.id)) ?? [],
+                status: vault.token(for: VaultAccount.read(connection.id)) == nil ? .tokenMissing : .ok
+            )
         }
         loadCache()
     }
@@ -357,7 +364,11 @@ final class AppModel {
 
     /// Asks the install again: is it there, does the token still work, which sites does it see.
     func test(_ id: UUID) async {
-        guard let index = connections.firstIndex(where: { $0.id == id }), let client = client(for: id) else { return }
+        guard let index = connections.firstIndex(where: { $0.id == id }) else { return }
+        guard let client = client(for: id) else {
+            connections[index].status = .tokenMissing
+            return
+        }
         connections[index].status = .checking
         let status: ConnectionStatus
         do {

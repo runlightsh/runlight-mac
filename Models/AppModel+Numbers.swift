@@ -100,7 +100,12 @@ extension AppModel {
     /// Runs one job and keeps what comes back. Returns whether it worked, so the poller can back off.
     @discardableResult
     func perform(_ job: Job) async -> Bool {
-        guard let client = client(for: job.connection) else { return false }
+        guard let client = client(for: job.connection) else {
+            if let state = connections.first(where: { $0.id == job.connection }), state.status != .tokenMissing {
+                update(job.connection) { $0.status = .tokenMissing }
+            }
+            return false
+        }
         // Live numbers come every 15 seconds; spinning the refresh button for each would never stop.
         let counted = if case .realtime = job { false } else { true }
         if counted { inFlight += 1 }

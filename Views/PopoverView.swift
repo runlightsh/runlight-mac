@@ -244,7 +244,7 @@ private struct ConnectionBanner: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if state.status == .tokenRejected {
+            if state.status.needsToken {
                 Button("Replace Token…", action: fix)
                     .buttonStyle(LampButtonStyle(compact: true))
             }
@@ -259,6 +259,7 @@ private struct ConnectionBanner: View {
     private var title: String {
         switch state.status {
         case .tokenRejected: "Token rejected"
+        case .tokenMissing: "Token missing"
         case .offline: "Offline"
         case .problem(let message): message
         case .ok, .checking: ""

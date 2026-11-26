@@ -198,6 +198,24 @@ struct ManageConnectionTests {
         #expect(model.connections.first?.status == .ok)
     }
 
+    @Test func aConnectionWithNoTokenSaysSo() async throws {
+        let harness = Harness()
+        let model = harness.model()
+        let state = try await model.connect(address: harness.server.baseURL.absoluteString, token: "rl_good")
+        // The token goes from the Keychain behind the app's back.
+        harness.vault.removeToken(for: VaultAccount.read(state.id))
+        #expect(harness.model().connections.first?.status == .tokenMissing)
+
+        let key = SiteKey(connection: state.id, site: "dailyphototips.com")
+        #expect(await model.perform(.stats(key, .today)) == false)
+        #expect(model.connections.first?.status == .tokenMissing)
+        #expect(model.connections.first?.status.needsToken == true)
+
+        // A new token puts it right.
+        try await model.replaceToken(state.id, with: "rl_new")
+        #expect(model.connections.first?.status == .ok)
+    }
+
     @Test func namesReadLikeAddresses() {
         #expect(AppModel.name(for: URL(string: "https://analytics.joncp.dev")!) == "analytics.joncp.dev")
         #expect(AppModel.name(for: URL(string: "https://example.com/runlight")!) == "example.com/runlight")

@@ -170,7 +170,7 @@ final class DashboardWindowController: NSWindowController, NSWindowDelegate, WKN
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
         window?.makeFirstResponder(webView)
-        NSApp.activate()
+        DockPresence.bringForward()
     }
 
     private func load(_ url: URL) {
@@ -464,6 +464,13 @@ private struct DashboardProblem: View {
 enum DockPresence {
     static func windowOpened() {
         NSApp.setActivationPolicy(.regular)
+    }
+
+    /// Makes Runlight the active app. Opened from the popover, which never takes focus from the app
+    /// in front, a polite request to activate is turned down, and the window would sit there taking
+    /// no clicks or keys; so this asks outright, as opening a window from a menu bar app should.
+    static func bringForward() {
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     static func windowClosed() {

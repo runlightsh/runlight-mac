@@ -82,7 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         let event = NSApp.currentEvent
         if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
-            popover?.hide()
+            popover?.hide(animated: false)
             showContextMenu()
         } else {
             popover?.toggle(from: sender)
@@ -112,14 +112,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func openDashboardFromMenu(_ sender: NSMenuItem) {
         guard let base = sender.representedObject as? URL, let connection = model.connection(for: base) else { return }
-        popover?.hide()
+        popover?.hide(animated: false)
         dashboards.show(connection)
     }
 
     /// Opens a dashboard page in the window or the browser, as Settings says. With no address, the
     /// first connection's dashboard where it was left.
     func openDashboard(_ url: URL?) {
-        popover?.hide()
+        popover?.hide(animated: false)
         guard let url else {
             if let first = model.connections.first?.connection {
                 if model.opensSitesInWindow { dashboards.show(first) } else { NSWorkspace.shared.open(first.baseURL) }
@@ -173,7 +173,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func openSettings(_ tab: SettingsTab?) {
-        popover?.hide()
+        popover?.hide(animated: false)
         settings.show(tab)
     }
 }

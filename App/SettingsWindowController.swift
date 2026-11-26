@@ -69,7 +69,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if window?.isVisible != true { window?.center() }
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
-        NSApp.activate()
+        DockPresence.bringForward()
     }
 
     func windowWillClose(_ notification: Notification) {

@@ -242,7 +242,7 @@ final class Poller {
         case .sources: intervals.sources
         }
         // A rejected token won't start working by itself; check back now and then.
-        if model?.connections.first(where: { $0.id == job.connection })?.status == .tokenRejected {
+        if model?.connections.first(where: { $0.id == job.connection })?.status.needsToken == true {
             return maxBackoff
         }
         if let failures = failureCounts[job] {

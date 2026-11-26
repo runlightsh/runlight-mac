@@ -413,6 +413,28 @@ private struct TopLists: View {
     }
 
     @ViewBuilder private var content: some View {
+        if let reason = unavailable {
+            Text(reason)
+                .font(.system(size: 11.5))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, Theme.Space.l)
+        } else {
+            lists
+        }
+    }
+
+    /// Why nothing new can load, when nothing can: then the lists say so rather than wait.
+    private var unavailable: String? {
+        let status = model.connections.first { $0.id == key.connection }?.status
+        if status == .tokenMissing { return "This connection's token is missing. Replace it in Settings, Connections." }
+        if status == .tokenRejected { return "The token was rejected. Replace it in Settings, Connections." }
+        if model.offline && model.details[key] == nil { return "Offline. These load once you're back online." }
+        return nil
+    }
+
+    @ViewBuilder private var lists: some View {
         let detail = model.details[key]
         let breakdowns = detail?.breakdowns[model.period]
         switch tab {
