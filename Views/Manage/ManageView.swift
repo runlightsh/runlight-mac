@@ -93,7 +93,11 @@ struct ManageSidebar: View {
             }
         }
         .listStyle(.sidebar)
+        // Solid, not the translucent material that takes on the colours of the desktop behind it:
+        // white in light mode and Runlight's near black in dark, as the popover is.
+        .scrollContentBackground(.hidden)
         .safeAreaInset(edge: .bottom) { footer }
+        .background(Theme.panel.ignoresSafeArea())
     }
 
     private var header: some View {
