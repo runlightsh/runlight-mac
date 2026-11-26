@@ -390,6 +390,14 @@ struct ProbeTests {
         #expect(server.requests.map { $0.url!.path } == ["/api", "/runlight/api"])
     }
 
+    @Test func findsWordPressWithPlainPermalinks() async throws {
+        let server = StubServer()
+        server.on("GET", "/index.php/runlight/api", fixture: "api")
+        let (base, _) = try await RunlightClient.probe(server.baseURL.absoluteString, session: server.session)
+        #expect(base.path == "/index.php/runlight")
+        #expect(server.requests.map { $0.url!.path } == ["/api", "/runlight/api", "/index.php/runlight/api"])
+    }
+
     @Test func refusesSomethingElse() async throws {
         let server = StubServer()
         server.on("GET", "/api") { _ in .init(status: 200, body: Data(#"{"name":"wordpress","version":"7","api":2}"#.utf8)) }

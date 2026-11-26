@@ -50,9 +50,11 @@ struct RunlightClient: Sendable {
     }
 
     /// The places to look, most likely first.
+    /// Where Runlight may answer for an address: the address itself, then mounted at /runlight, as an
+    /// app or a CMS plugin mounts it, then /index.php/runlight, where WordPress with plain permalinks has it.
     static func candidates(for url: URL) -> [URL] {
         if url.path.hasSuffix("/runlight") { return [url] }
-        return [url, url.appending(path: "runlight")]
+        return [url, url.appending(path: "runlight"), url.appending(path: "index.php/runlight")]
     }
 
     // MARK: Install and token
