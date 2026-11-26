@@ -292,7 +292,7 @@ struct RequestShapeTests {
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
         #expect(request.url?.query == "site=dailyphototips.com")
         let body = try #require(server.requestBodies.first)
-        #expect(String(decoding: body, as: UTF8.self) == #"{"kind":"event","match":"Download","name":"Download preset","valueMode":"none"}"#)
+        #expect(String(decoding: body, as: UTF8.self) == #"{"currency":"USD","kind":"event","match":"Download","name":"Download preset","valueMode":"none"}"#)
     }
 
     @Test func updateGoalWithAFixedValue() async throws {
@@ -300,7 +300,7 @@ struct RequestShapeTests {
         server.on("PATCH", "/api/goals/abc", fixture: "goal-update")
         _ = try await server.client().updateGoal(id: "abc", site: "s", GoalInput(name: "Download a preset", kind: .event, match: "Download", fixedValue: 5))
         let body = try #require(server.requestBodies.first)
-        #expect(String(decoding: body, as: UTF8.self) == #"{"kind":"event","match":"Download","name":"Download a preset","value":5,"valueMode":"fixed"}"#)
+        #expect(String(decoding: body, as: UTF8.self) == #"{"currency":"USD","kind":"event","match":"Download","name":"Download a preset","value":5,"valueMode":"fixed"}"#)
     }
 
     @Test func deletesSendJSONToo() async throws {

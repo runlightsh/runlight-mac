@@ -296,26 +296,73 @@ struct GoalResponse: Codable, Sendable {
 }
 
 /// What the goal form sends. Page goals take paths with wildcards, like `/thanks*`.
+///
+/// The server rebuilds a goal from what it's sent, so an edit sends every field, including the ones
+/// the app's form doesn't show (a click goal's rule, an amount taken from the event, the currency),
+/// as the goal already has them.
 struct GoalInput: Encodable, Equatable, Sendable {
+    enum Value: Equatable, Sendable {
+        case none
+        /// The same amount for every conversion.
+        case fixed(Double)
+        /// Taken from a property the event sends, such as `revenue`.
+        case fromEvent(String)
+    }
+
     var name: String
     var kind: GoalKind
     var match: String
-    /// A fixed amount each conversion is worth, or nil for none.
-    var fixedValue: Double?
+    var value: Value = .none
+    var currency = "USD"
+    /// For a click goal: "selector" or "link".
+    var clickBy = ""
 
-    private enum CodingKeys: String, CodingKey { case name, kind, match, valueMode, value }
+    init(name: String, kind: GoalKind, match: String, fixedValue: Double? = nil) {
+        self.name = name
+        self.kind = kind
+        self.match = match
+        value = fixedValue.map(Value.fixed) ?? .none
+    }
+
+    /// The goal as it is, to change a field or two and send back.
+    init(editing goal: Goal) {
+        name = goal.name
+        kind = goal.kind
+        match = goal.match
+        clickBy = goal.clickBy ?? ""
+        currency = goal.currency?.isEmpty == false ? goal.currency! : "USD"
+        switch goal.valueMode {
+        case "fixed": value = .fixed(goal.value ?? 0)
+        case "prop": value = .fromEvent(goal.valueProp?.isEmpty == false ? goal.valueProp! : "revenue")
+        default: value = .none
+        }
+    }
+
+    /// A fixed amount each conversion is worth, or nil for none.
+    var fixedValue: Double? {
+        get { if case .fixed(let amount) = value { amount } else { nil } }
+        set { value = newValue.map(Value.fixed) ?? .none }
+    }
+
+    private enum CodingKeys: String, CodingKey { case name, kind, match, clickBy, valueMode, value, valueProp, currency }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(name, forKey: .name)
         try container.encode(kind, forKey: .kind)
         try container.encode(match, forKey: .match)
-        if let fixedValue {
-            try container.encode("fixed", forKey: .valueMode)
-            try container.encode(fixedValue, forKey: .value)
-        } else {
+        if kind == .click { try container.encode(clickBy.isEmpty ? "selector" : clickBy, forKey: .clickBy) }
+        switch value {
+        case .none:
             try container.encode("none", forKey: .valueMode)
+        case .fixed(let amount):
+            try container.encode("fixed", forKey: .valueMode)
+            try container.encode(amount, forKey: .value)
+        case .fromEvent(let property):
+            try container.encode("prop", forKey: .valueMode)
+            try container.encode(property, forKey: .valueProp)
         }
+        try container.encode(currency, forKey: .currency)
     }
 }
 

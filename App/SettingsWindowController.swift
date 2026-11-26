@@ -34,12 +34,12 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private let tabs = NSTabViewController()
 
-    init(model: AppModel) {
+    init(model: AppModel, manageSite: @escaping @MainActor @Sendable (SiteKey) -> Void = { _ in }) {
         tabs.tabStyle = .toolbar
         tabs.transitionOptions = [.allowUserInteraction]
         tabs.canPropagateSelectedChildViewControllerTitle = true
         for tab in SettingsTab.allCases {
-            let controller = NSHostingController(rootView: AnyView(Self.view(for: tab).environment(model)))
+            let controller = NSHostingController(rootView: AnyView(Self.view(for: tab).environment(model).environment(\.manageSite, manageSite)))
             controller.sizingOptions = []
             controller.preferredContentSize = SettingsLayout.paneSize
             controller.title = tab.title

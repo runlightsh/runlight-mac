@@ -84,6 +84,7 @@ private struct SiteSettingsRow: View {
     let site: Site
 
     @Environment(AppModel.self) private var model
+    @Environment(\.manageSite) private var manageSite
     @State private var handleHovered = false
 
     var body: some View {
@@ -122,6 +123,12 @@ private struct SiteSettingsRow: View {
             .environment(model)
         }
         .onDrop(of: [.text], delegate: ReorderDrop(target: key, model: model))
+        .contextMenu {
+            Button(model.canEdit(key) ? "Manage…" : "Manage (Read-Only)…") { manageSite(key) }
+            if model.canEdit(key) {
+                Button("Remove Manage Token") { model.removeManageToken(key) }
+            }
+        }
         .accessibilityAction(named: "Move up") { move(by: -1) }
         .accessibilityAction(named: "Move down") { move(by: 1) }
     }

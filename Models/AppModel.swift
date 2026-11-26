@@ -112,6 +112,8 @@ final class AppModel {
     var siteOrder: [SiteKey] = [] {
         didSet { defaults.set(siteOrder.map(\.storageKey), forKey: "siteOrder") }
     }
+    /// Changes when a manage token is added or removed, so views asking `canEdit` look again.
+    var manageTokens = 0
     /// The site being dragged in Settings, shown as a placeholder while the others move around it.
     var draggingSite: SiteKey?
     /// Whether the popover lists sites in that order rather than busiest first.
@@ -333,6 +335,60 @@ final class AppModel {
     func client(for id: UUID) -> RunlightClient? {
         guard let state = connections.first(where: { $0.id == id }), let token = vault.token(for: VaultAccount.read(id)) else { return nil }
         return RunlightClient(baseURL: state.connection.baseURL, token: token, session: session)
+    }
+
+    // MARK: Manage tokens
+
+    /// Whether a site can be edited: a manage token for it is in the Keychain. Read through
+    /// `manageTokens` so views update when one is added or removed.
+    func canEdit(_ key: SiteKey) -> Bool {
+        _ = manageTokens
+        return vault.token(for: VaultAccount.manage(key.connection, site: key.site)) != nil
+    }
+
+    /// A client that edits one site, with its manage token.
+    func manageClient(for key: SiteKey) -> RunlightClient? {
+        guard let state = connections.first(where: { $0.id == key.connection }),
+              let token = vault.token(for: VaultAccount.manage(key.connection, site: key.site)) else { return nil }
+        return RunlightClient(baseURL: state.connection.baseURL, token: token, session: session)
+    }
+
+    /// Checks a pasted manage token against the install and keeps it for this one site.
+    func addManageToken(_ key: SiteKey, token rawToken: String) async throws(ConnectError) {
+        let token = rawToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !token.isEmpty else { throw ConnectError(field: .token, message: "Paste the site's manage token.") }
+        guard let state = connections.first(where: { $0.id == key.connection }) else { return }
+        let name = state.sites.first { $0.id == key.site }?.name ?? key.site
+        let info: TokenInfo
+        do {
+            info = try await RunlightClient(baseURL: state.connection.baseURL, token: token, session: session).tokenInfo()
+        } catch {
+            if error.isTokenRejected { throw .tokenRejected }
+            throw .network(error)
+        }
+        switch info.scope {
+        case .manage where info.site == key.site:
+            break
+        case .manage:
+            let other = state.sites.first { $0.id == info.site }?.name ?? info.site
+            throw ConnectError(field: .token, message: "This manage token is for \(other). Make one for \(name) in the dashboard, under Settings, MCP & API.")
+        case .read:
+            throw ConnectError(field: .token, message: "This is a read-only token. Editing \(name) needs a manage token made for it, under Settings, MCP & API.")
+        default:
+            throw ConnectError(field: .token, message: "This isn't a manage token. Make one for \(name) in the dashboard, under Settings, MCP & API.")
+        }
+        do {
+            try vault.setToken(token, for: VaultAccount.manage(key.connection, site: key.site))
+        } catch {
+            throw ConnectError(field: .token, message: "Couldn't save the token in the Keychain (\(error)).")
+        }
+        manageTokens += 1
+    }
+
+    /// Forgets a site's manage token; the site goes back to read-only.
+    func removeManageToken(_ key: SiteKey) {
+        vault.removeToken(for: VaultAccount.manage(key.connection, site: key.site))
+        manageTokens += 1
     }
 
     // MARK: Connecting

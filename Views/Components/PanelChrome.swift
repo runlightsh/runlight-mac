@@ -113,11 +113,13 @@ struct LampButtonStyle: ButtonStyle {
                         .brightness(configuration.isPressed ? -0.08 : hovering && isEnabled ? 0.04 : 0)
                         .shadow(color: Theme.lamp.opacity(hovering && isEnabled ? 0.45 : 0.2), radius: hovering && isEnabled ? 8 : 4, y: 1)
                 }
+                .opacity(isEnabled ? 1 : 0.4)
                 .scaleEffect(configuration.isPressed ? 0.97 : 1)
                 .onHover { inside in
                     withAnimation(Theme.Motion.hover) { hovering = inside }
                 }
                 .animation(Theme.Motion.hover, value: configuration.isPressed)
+                .animation(Theme.Motion.hover, value: isEnabled)
         }
     }
 }
