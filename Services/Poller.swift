@@ -5,7 +5,12 @@ import Foundation
 /// than ticking, runs a few at a time, and staggers new jobs so fourteen sites never fire at once.
 ///
 /// The open site adds its live numbers every 15 seconds and its top lists every 2 minutes, only
-/// while the popover is up. Milestone 6 adds pausing on sleep and offline, Low Power Mode, and backing off after failures.
+/// while the popover is up.
+///
+/// Nothing goes out while the Mac sleeps or has no network; on waking or reconnecting, everything
+/// that fell due catches up within a few seconds. Low Power Mode doubles the background intervals.
+/// A job that keeps failing waits longer each time, and a connection whose token was rejected is
+/// left alone until the token works again.
 @MainActor
 final class Poller {
     struct Intervals {
@@ -21,10 +26,24 @@ final class Poller {
 
     var intervals = Intervals()
     let maxConcurrent = 4
+
+    enum PauseReason: Hashable { case sleep, offline }
+    /// Why polling is stopped, if it is. Polling runs only when this is empty.
+    private(set) var paused: Set<PauseReason> = []
+    /// How long after waking to start again, so the network has a moment to come back.
+    var wakeDelay: TimeInterval = 2
+    /// Low Power Mode: background jobs come half as often. The open site's live view doesn't change.
+    var lowPower = false
+    /// The longest a failing job waits between tries.
+    let maxBackoff: TimeInterval = 30 * 60
+    /// How many times in a row each job has failed.
+    private(set) var failureCounts: [Job: Int] = [:]
+    private var resumeTask: Task<Void, Never>?
     /// Space between new jobs, so a fresh start fans out over a couple of seconds.
     let stagger: TimeInterval = 0.12
 
-    private unowned let model: AppModel
+    /// Weak: the model owns the poller, and a fetch still on its way must not outlive it.
+    private weak var model: AppModel?
     private(set) var due: [Job: Date] = [:]
     private var running: Set<Job> = []
     private var loop: Task<Void, Never>?
@@ -48,6 +67,7 @@ final class Poller {
     /// Works out which jobs should exist now (today for the menu bar, plus the period on screen, for
     /// every site) and adds the new ones, due when their cached copy goes stale.
     func reconcile() {
+        guard let model else { return }
         let now = model.now()
         var wanted: [Job: Date] = [:]
         var fresh = 0
@@ -89,6 +109,7 @@ final class Poller {
 
     /// Makes every number job for the period on screen due now if its copy is older than `age`.
     func refresh(olderThan age: TimeInterval, stagger: TimeInterval? = nil) {
+        guard let model else { return }
         let stagger = stagger ?? self.stagger
         let now = model.now()
         var index = 0
@@ -110,14 +131,65 @@ final class Poller {
         wake()
     }
 
+    // MARK: Pausing
+
+    func pause(_ reason: PauseReason) {
+        resumeTask?.cancel()
+        paused.insert(reason)
+        loop?.cancel()
+        loop = nil
+    }
+
+    /// Lifts one reason to pause. When none is left, everything that fell due while paused runs,
+    /// staggered, after a short wait on waking.
+    func resume(_ reason: PauseReason) {
+        guard paused.contains(reason) else { return }
+        paused.remove(reason)
+        guard paused.isEmpty else { return }
+        resumeTask?.cancel()
+        let delay = reason == .sleep ? wakeDelay : 0
+        resumeTask = Task { [weak self] in
+            if delay > 0 { try? await Task.sleep(for: .seconds(delay)) }
+            guard !Task.isCancelled, let self, paused.isEmpty else { return }
+            catchUp()
+        }
+    }
+
+    /// After a pause: jobs that fell due, or failed on the way into it, run now, a little apart.
+    private func catchUp() {
+        guard let model else { return }
+        let now = model.now()
+        let behind = due.filter { $0.value <= now || failureCounts[$0.key] != nil }.sorted { $0.value < $1.value }
+        for (index, entry) in behind.enumerated() {
+            due[entry.key] = now.addingTimeInterval(Double(index) * stagger)
+        }
+        // A fresh start: failures from before the pause were most likely the pause itself.
+        failureCounts = [:]
+        wake()
+    }
+
+    /// A connection that works again (a new token, say) catches up at once rather than waiting out its back-off.
+    func retry(connection: UUID) {
+        guard let model else { return }
+        let now = model.now()
+        var index = 0
+        for job in due.keys where job.connection == connection {
+            failureCounts[job] = nil
+            due[job] = now.addingTimeInterval(Double(index) * stagger)
+            index += 1
+        }
+        wake()
+    }
+
     private func wake() {
-        guard started else { return }
+        guard started, paused.isEmpty else { return }
         loop?.cancel()
         loop = Task { [weak self] in await self?.run() }
     }
 
     private func run() async {
         while !Task.isCancelled {
+            guard let model else { return }
             let now = model.now()
             // The open site's jobs go first: someone is looking at them.
             let ready = due.filter { $0.value <= now && !running.contains($0.key) }.sorted {
@@ -126,11 +198,12 @@ final class Poller {
             for (job, _) in ready.prefix(max(0, maxConcurrent - running.count)) {
                 running.insert(job)
                 Task { [weak self] in
-                    guard let self else { return }
+                    guard let self, let model = self.model else { return }
                     let worked = await model.perform(job)
                     running.remove(job)
+                    noteResult(job, worked: worked)
                     if due[job] != nil {
-                        due[job] = model.now().addingTimeInterval(interval(for: job, worked: worked))
+                        due[job] = model.now().addingTimeInterval(interval(for: job))
                     }
                     wake()
                 }
@@ -143,7 +216,13 @@ final class Poller {
         }
     }
 
-    private func interval(for job: Job, worked: Bool) -> TimeInterval {
+    /// Counts a job's failures in a row; a success clears them.
+    func noteResult(_ job: Job, worked: Bool) {
+        failureCounts[job] = worked ? nil : (failureCounts[job] ?? 0) + 1
+    }
+
+    /// How long until a job runs again, after it just ran.
+    func interval(for job: Job) -> TimeInterval {
         let base: TimeInterval = switch job {
         case .stats: intervals.stats
         case .series: intervals.series
@@ -153,11 +232,23 @@ final class Poller {
         case .realtime: intervals.realtime
         case .breakdown: intervals.breakdown
         }
-        // A failed icon or site list waits its full interval; a failed number tries again in a minute.
-        if !worked, case .stats = job { return 60 }
-        if !worked, case .series = job { return 60 }
-        if !worked, case .goals = job { return 60 }
-        if !worked, case .breakdown = job { return 60 }
-        return base
+        // A rejected token won't start working by itself; check back now and then.
+        if model?.connections.first(where: { $0.id == job.connection })?.status == .tokenRejected {
+            return maxBackoff
+        }
+        if let failures = failureCounts[job] {
+            switch job {
+            case .realtime:
+                // Someone is watching: keep trying, a little slower.
+                return min(base * Double(failures + 1), 60)
+            case .icon, .sites:
+                // These wait their full interval anyway.
+                return base
+            default:
+                // A minute, then two, four, eight, and so on, up to half an hour.
+                return min(60 * pow(2, Double(failures - 1)), maxBackoff)
+            }
+        }
+        return lowPower && !job.isDetail ? base * 2 : base
     }
 }

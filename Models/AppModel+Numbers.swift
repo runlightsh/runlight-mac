@@ -209,6 +209,31 @@ extension AppModel {
     func startPolling() {
         if poller == nil { poller = Poller(model: self) }
         poller?.start()
+        if conditions == nil {
+            let conditions = SystemConditions()
+            conditions.onChange = { [weak self] change in self?.conditionsChanged(change) }
+            conditions.start()
+            self.conditions = conditions
+        }
+    }
+
+    /// Sleep, wake, the network coming and going, and Low Power Mode, passed to the poller.
+    func conditionsChanged(_ change: SystemConditions.Change) {
+        switch change {
+        case .sleep:
+            poller?.pause(.sleep)
+        case .wake:
+            poller?.resume(.sleep)
+        case .online(let online):
+            if online {
+                poller?.resume(.offline)
+            } else {
+                poller?.pause(.offline)
+            }
+            if offline != !online { offline = !online }
+        case .lowPower(let on):
+            poller?.lowPower = on
+        }
     }
 
     /// The popover opened: anything older than a minute is fetched now, so it's fresh within seconds.

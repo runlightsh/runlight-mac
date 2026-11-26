@@ -84,7 +84,16 @@ struct SiteKey: Hashable, Codable, Sendable {
 @MainActor
 @Observable
 final class AppModel {
-    private(set) var connections: [ConnectionState] = []
+    private(set) var connections: [ConnectionState] = [] {
+        didSet {
+            // A connection that starts working again catches up at once.
+            for state in connections where state.status == .ok {
+                if let before = oldValue.first(where: { $0.id == state.id }), before.status != .ok, before.status != .checking {
+                    poller?.retry(connection: state.id)
+                }
+            }
+        }
+    }
     /// Whether Settings shows the Add Connection sheet. The popover sets it before opening Settings.
     var addingConnection = false
 
@@ -132,6 +141,7 @@ final class AppModel {
     var offline = false
 
     @ObservationIgnored var poller: Poller?
+    @ObservationIgnored var conditions: SystemConditions?
     @ObservationIgnored var saveTasks: [String: Task<Void, Never>] = [:]
 
     let store: ConnectionStore
