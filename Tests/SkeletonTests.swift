@@ -92,3 +92,38 @@ struct MarkGeometryTests {
         #expect(lamp.midY < MarkGeometry.housing.midY)
     }
 }
+
+struct IconToneTests {
+    /// A 64 pixel icon: a clear square with a mark in the middle, or filled edge to edge.
+    func icon(mark: UInt32, background: UInt32? = nil) -> CGImage {
+        let context = CGContext(data: nil, width: 64, height: 64, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        if let background {
+            context.setFillColor(NSColor(rgb: background).cgColor)
+            context.fill(CGRect(x: 0, y: 0, width: 64, height: 64))
+        }
+        context.setFillColor(NSColor(rgb: mark).cgColor)
+        context.fill(CGRect(x: 16, y: 8, width: 8, height: 48))
+        context.fill(CGRect(x: 16, y: 28, width: 32, height: 8))
+        return context.makeImage()!
+    }
+
+    @Test func aDarkMarkOnClearIsBackedInDarkMode() {
+        let tone = IconTone.of(icon(mark: 0x111111))
+        #expect(tone == .darkMark)
+        #expect(tone.backing(in: .dark) != nil)
+        #expect(tone.backing(in: .light) == nil)
+    }
+
+    @Test func aLightMarkOnClearIsBackedInLightMode() {
+        let tone = IconTone.of(icon(mark: 0xFAFAFA))
+        #expect(tone == .lightMark)
+        #expect(tone.backing(in: .light) != nil)
+        #expect(tone.backing(in: .dark) == nil)
+    }
+
+    @Test func anIconWithItsOwnBackgroundIsLeftAlone() {
+        #expect(IconTone.of(icon(mark: 0xFFFFFF, background: 0xD95926)) == .opaque)
+        // A coloured mark reads on either background.
+        #expect(IconTone.of(icon(mark: 0xD95926)) == .opaque)
+    }
+}

@@ -98,21 +98,31 @@ struct Sparkline: View {
     }
 }
 
-/// A site's own icon from Runlight, or its letter tile when it has none.
+/// A site's own icon from Runlight, or its letter tile when it has none. An icon that is a dark mark
+/// on a clear background sits on a soft light tile in dark mode, and a light mark on a dark tile in
+/// light mode, so it never vanishes into the background.
 struct SiteIcon: View {
     let key: SiteKey
     let site: Site
     var size: CGFloat = 20
 
     @Environment(AppModel.self) private var model
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        if let entry = model.icons[key], !entry.data.isEmpty, let image = IconImages.image(entry, key: key) {
-            Image(nsImage: image)
+        if let entry = model.icons[key], !entry.data.isEmpty, let icon = IconImages.icon(entry, key: key) {
+            let backing = icon.tone.backing(in: colorScheme)
+            Image(nsImage: icon.image)
                 .resizable()
                 .interpolation(.high)
                 .aspectRatio(contentMode: .fit)
+                .padding(backing == nil ? 0 : size * 0.12)
                 .frame(width: size, height: size)
+                .background {
+                    if let backing {
+                        RoundedRectangle(cornerRadius: size * 0.24, style: .continuous).fill(backing)
+                    }
+                }
                 .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
                 .accessibilityHidden(true)
                 .transition(.opacity)
@@ -122,17 +132,65 @@ struct SiteIcon: View {
     }
 }
 
-/// Decoded icons, kept so each is decoded once rather than on every redraw.
+/// How an icon reads against a background: a dark or light mark on a clear background, or an icon
+/// that brings its own.
+enum IconTone: Equatable, Sendable {
+    case darkMark, lightMark, opaque
+
+    func backing(in scheme: ColorScheme) -> Color? {
+        switch (self, scheme) {
+        case (.darkMark, .dark): Color.white.opacity(0.92)
+        case (.lightMark, .light): Color(light: 0x27272A, dark: 0x27272A)
+        default: nil
+        }
+    }
+
+    /// Looks at the icon small: how much of it is clear, and how bright what isn't clear is.
+    static func of(_ image: CGImage) -> IconTone {
+        let side = 24
+        var pixels = [UInt8](repeating: 0, count: side * side * 4)
+        guard let context = CGContext(data: &pixels, width: side, height: side, bitsPerComponent: 8, bytesPerRow: side * 4,
+                                      space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return .opaque }
+        context.interpolationQuality = .medium
+        context.draw(image, in: CGRect(x: 0, y: 0, width: side, height: side))
+        var clear = 0
+        var weight = 0.0
+        var light = 0.0
+        for index in stride(from: 0, to: pixels.count, by: 4) {
+            let alpha = Double(pixels[index + 3]) / 255
+            if alpha < 0.1 { clear += 1; continue }
+            // Premultiplied, so divide the alpha back out before weighing the colour.
+            let r = Double(pixels[index]) / 255 / alpha, g = Double(pixels[index + 1]) / 255 / alpha, b = Double(pixels[index + 2]) / 255 / alpha
+            light += (0.2126 * r + 0.7152 * g + 0.0722 * b) * alpha
+            weight += alpha
+        }
+        // An icon with a background of its own fills nearly all of its square.
+        guard Double(clear) / Double(side * side) > 0.15, weight > 0 else { return .opaque }
+        let luminance = light / weight
+        if luminance < 0.3 { return .darkMark }
+        if luminance > 0.75 { return .lightMark }
+        return .opaque
+    }
+}
+
+/// Decoded icons and their tone, kept so each is worked out once rather than on every redraw.
 @MainActor
 enum IconImages {
-    private static var cache: [String: NSImage] = [:]
+    struct Icon {
+        let image: NSImage
+        let tone: IconTone
+    }
 
-    static func image(_ entry: IconEntry, key: SiteKey) -> NSImage? {
+    private static var cache: [String: Icon] = [:]
+
+    static func icon(_ entry: IconEntry, key: SiteKey) -> Icon? {
         let name = "\(key.connection)/\(key.site)/\(entry.checkedAt.timeIntervalSince1970)"
-        if let image = cache[name] { return image }
+        if let icon = cache[name] { return icon }
         guard let image = NSImage(data: entry.data), image.isValid, image.size.width > 0 else { return nil }
-        cache[name] = image
-        return image
+        let tone = image.cgImage(forProposedRect: nil, context: nil, hints: nil).map(IconTone.of) ?? .opaque
+        let icon = Icon(image: image, tone: tone)
+        cache[name] = icon
+        return icon
     }
 }
 
