@@ -194,6 +194,7 @@ private struct ReplaceTokenForm: View {
             HStack {
                 Spacer()
                 Button("Cancel", action: done)
+                    .buttonStyle(QuietButtonStyle(compact: true))
                     .keyboardShortcut(.cancelAction)
                     .disabled(working)
                 Button(action: save) {

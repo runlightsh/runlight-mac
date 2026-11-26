@@ -51,6 +51,7 @@ struct ConnectForm: View {
                 Spacer()
                 if let onCancel {
                     Button("Cancel", action: onCancel)
+                        .buttonStyle(QuietButtonStyle(compact: true))
                         .keyboardShortcut(.cancelAction)
                         .disabled(step != nil)
                 }

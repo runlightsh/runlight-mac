@@ -122,6 +122,41 @@ struct LampButtonStyle: ButtonStyle {
     }
 }
 
+/// The quiet partner to the lamp button, such as Cancel beside it: the same capsule and size on a
+/// soft fill, so the pair reads as one set.
+struct QuietButtonStyle: ButtonStyle {
+    var compact = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        QuietButton(configuration: configuration, compact: compact)
+    }
+
+    private struct QuietButton: View {
+        let configuration: Configuration
+        let compact: Bool
+        @State private var hovering = false
+        @Environment(\.isEnabled) private var isEnabled
+
+        var body: some View {
+            configuration.label
+                .font(.system(size: compact ? 12 : 13, weight: .medium))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, compact ? 12 : Theme.Space.l)
+                .padding(.vertical, compact ? 4 : 7)
+                .background {
+                    Capsule(style: .continuous)
+                        .fill(.primary.opacity(configuration.isPressed ? 0.16 : hovering && isEnabled ? 0.12 : 0.08))
+                }
+                .opacity(isEnabled ? 1 : 0.5)
+                .scaleEffect(configuration.isPressed ? 0.97 : 1)
+                .onHover { inside in
+                    withAnimation(Theme.Motion.hover) { hovering = inside }
+                }
+                .animation(Theme.Motion.hover, value: configuration.isPressed)
+        }
+    }
+}
+
 /// A small spinning arc in the current foreground colour, for buttons that are working.
 struct Spinner: View {
     var size: CGFloat = 11
