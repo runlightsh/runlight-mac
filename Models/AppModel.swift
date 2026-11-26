@@ -104,6 +104,14 @@ final class AppModel {
             poller?.reconcile()
         }
     }
+    /// The order sites were dragged into in Settings, as storage keys. Sites not in it follow, in the install's order.
+    var siteOrder: [SiteKey] = [] {
+        didSet { defaults.set(siteOrder.map(\.storageKey), forKey: "siteOrder") }
+    }
+    /// Whether the popover lists sites in that order rather than busiest first.
+    var usesCustomOrder = false {
+        didSet { defaults.set(usesCustomOrder, forKey: "customSiteOrder") }
+    }
     /// Whether the menu bar shows total site visits beside the icon, or the icon alone.
     var showsMenuBarTotal = true {
         didSet { defaults.set(showsMenuBarTotal, forKey: "menuBarTotal") }
@@ -156,6 +164,8 @@ final class AppModel {
         self.defaults = defaults
         period = Period(rawValue: defaults.string(forKey: "period") ?? "") ?? .today
         showsMenuBarTotal = defaults.object(forKey: "menuBarTotal") as? Bool ?? true
+        siteOrder = (defaults.stringArray(forKey: "siteOrder") ?? []).compactMap(SiteKey.init(storageKey:))
+        usesCustomOrder = defaults.bool(forKey: "customSiteOrder")
         hiddenSites = Set((defaults.stringArray(forKey: "hiddenSites") ?? []).compactMap(SiteKey.init(storageKey:)))
         self.vault = vault
         self.session = session
@@ -168,9 +178,32 @@ final class AppModel {
 
     var isEmpty: Bool { connections.isEmpty }
 
-    /// Every site across every connection, in connection order, switched off or not.
+    /// Every site across every connection, in connection order and then the order set in Settings,
+    /// switched off or not.
     var allSites: [(connection: ConnectionState, site: Site)] {
-        connections.flatMap { state in state.sites.map { (state, $0) } }
+        connections.flatMap { state in orderedSites(state).map { (state, $0) } }
+    }
+
+    /// A connection's sites in the order dragged into in Settings; new ones go at the end.
+    func orderedSites(_ state: ConnectionState) -> [Site] {
+        let position = Dictionary(siteOrder.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
+        return state.sites.enumerated().sorted { a, b in
+            let left = position[SiteKey(connection: state.id, site: a.element.id)] ?? Int.max
+            let right = position[SiteKey(connection: state.id, site: b.element.id)] ?? Int.max
+            return left != right ? left < right : a.offset < b.offset
+        }.map(\.element)
+    }
+
+    /// Moves a site to where another one is, within its connection, and lists the popover in that order.
+    func moveSite(_ moving: SiteKey, to target: SiteKey) {
+        guard moving != target, moving.connection == target.connection,
+              let state = connections.first(where: { $0.id == moving.connection }) else { return }
+        var keys = orderedSites(state).map { SiteKey(connection: state.id, site: $0.id) }
+        guard let from = keys.firstIndex(of: moving), let to = keys.firstIndex(of: target) else { return }
+        keys.remove(at: from)
+        keys.insert(moving, at: to)
+        siteOrder = siteOrder.filter { $0.connection != state.id } + keys
+        usesCustomOrder = true
     }
 
     /// The sites that are switched on.
@@ -338,6 +371,7 @@ final class AppModel {
         details = details.filter { $0.key.connection != id }
         if expandedSite?.connection == id { expandedSite = nil }
         hiddenSites = hiddenSites.filter { $0.connection != id }
+        siteOrder = siteOrder.filter { $0.connection != id }
         persist()
         poller?.reconcile()
     }

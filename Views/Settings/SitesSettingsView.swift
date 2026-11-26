@@ -30,9 +30,22 @@ struct SitesSettingsView: View {
                 .padding(.bottom, Theme.Space.xxl)
             } else {
                 Form {
+                    Section {
+                        @Bindable var model = model
+                        Picker("Order in the popover", selection: $model.usesCustomOrder) {
+                            Text("Most visitors").tag(false)
+                            Text("As listed here").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                    } footer: {
+                        Text("Drag a site by its handle to reorder.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     ForEach(model.connections) { state in
                         Section {
-                            ForEach(state.sites) { site in
+                            ForEach(model.orderedSites(state)) { site in
                                 SiteSettingsRow(key: SiteKey(connection: state.id, site: site.id), site: site)
                             }
                         } header: {
@@ -66,10 +79,34 @@ private struct SiteSettingsRow: View {
     let site: Site
 
     @Environment(AppModel.self) private var model
+    @State private var targeted = false
+    @State private var handleHovered = false
 
     var body: some View {
         let shown = model.isShown(key)
         HStack(spacing: Theme.Space.m - 2) {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(handleHovered ? .secondary : .tertiary)
+                .frame(width: 14, height: 24)
+                .contentShape(Rectangle())
+                .onHover { inside in
+                    handleHovered = inside
+                    if inside { NSCursor.openHand.push() } else { NSCursor.pop() }
+                }
+                .draggable(key.storageKey) {
+                    // What follows the pointer: the site's icon and name on a small card.
+                    HStack(spacing: Theme.Space.s) {
+                        SiteIcon(key: key, site: site, size: 18)
+                        Text(site.name).font(.system(size: 12, weight: .medium))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.regularMaterial))
+                    .environment(model)
+                }
+                .help("Drag to reorder")
+                .accessibilityHidden(true)
             SiteIcon(key: key, site: site, size: 24)
                 .saturation(shown ? 1 : 0)
                 .opacity(shown ? 1 : 0.5)
@@ -94,6 +131,30 @@ private struct SiteSettingsRow: View {
         }
         .padding(.vertical, 1)
         .animation(Theme.Motion.hover, value: shown)
+        .overlay(alignment: .top) {
+            // Where the dragged site will land.
+            Capsule()
+                .fill(Theme.lamp)
+                .frame(height: 2)
+                .offset(y: -5)
+                .opacity(targeted ? 1 : 0)
+                .animation(Theme.Motion.hover, value: targeted)
+        }
+        .dropDestination(for: String.self) { items, _ in
+            guard let moving = items.first.flatMap(SiteKey.init(storageKey:)), moving.connection == key.connection else { return false }
+            withAnimation(Theme.Motion.push) { model.moveSite(moving, to: key) }
+            return true
+        } isTargeted: { targeted = $0 }
+        .accessibilityAction(named: "Move up") { move(by: -1) }
+        .accessibilityAction(named: "Move down") { move(by: 1) }
+    }
+
+    /// For VoiceOver and keyboard users, who can't drag: one place up or down.
+    private func move(by offset: Int) {
+        guard let state = model.connections.first(where: { $0.id == key.connection }) else { return }
+        let sites = model.orderedSites(state)
+        guard let index = sites.firstIndex(where: { $0.id == key.site }), sites.indices.contains(index + offset) else { return }
+        withAnimation(Theme.Motion.push) { model.moveSite(key, to: SiteKey(connection: key.connection, site: sites[index + offset].id)) }
     }
 
     /// "America/Toronto" reads as "Toronto".

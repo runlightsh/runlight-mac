@@ -200,3 +200,29 @@ struct DetailTests {
         #expect(SeriesChart.niceCeiling(0) == 1)
     }
 }
+
+@MainActor
+struct SiteOrderTests {
+    @Test func draggingASiteReordersThePopoverAndIsRemembered() async throws {
+        let harness = Harness()
+        let model = harness.model()
+        let state = try await model.connect(address: harness.server.baseURL.absoluteString, token: "rl_good")
+        let ids = model.allSites.map(\.site.id)
+        let last = SiteKey(connection: state.id, site: ids.last!)
+        let first = SiteKey(connection: state.id, site: ids.first!)
+        #expect(!model.usesCustomOrder)
+
+        model.moveSite(last, to: first)
+        #expect(model.usesCustomOrder)
+        #expect(model.allSites.map(\.site.id) == [ids.last!] + ids.dropLast())
+        #expect(model.rankedSites.map(\.key.site) == [ids.last!] + ids.dropLast())
+
+        let relaunched = harness.model()
+        #expect(relaunched.usesCustomOrder)
+        #expect(relaunched.allSites.map(\.site.id) == [ids.last!] + ids.dropLast())
+
+        // Moving down lands it where the target was.
+        model.moveSite(last, to: SiteKey(connection: state.id, site: ids[1]))
+        #expect(model.allSites.map(\.site.id) == [ids[0], ids[1], ids.last!] + ids[2..<ids.count - 1])
+    }
+}

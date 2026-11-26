@@ -55,9 +55,11 @@ extension AppModel {
         return today.isEmpty ? nil : today.reduce(0) { $0 + $1.stats.visitors }
     }
 
-    /// Sites in the order the list shows them: the most visitors first, sites with no numbers yet last.
+    /// Sites in the order the list shows them: the order set in Settings, or the most visitors first
+    /// with sites that have no numbers yet last.
     var rankedSites: [(key: SiteKey, connection: ConnectionState, site: Site)] {
         let entries = shownSites.map { (key: SiteKey(connection: $0.connection.id, site: $0.site.id), connection: $0.connection, site: $0.site) }
+        if usesCustomOrder { return entries }
         return entries.enumerated().sorted { a, b in
             let left = snapshot(a.element.key)?.stats?.stats.visitors ?? -1
             let right = snapshot(b.element.key)?.stats?.stats.visitors ?? -1
