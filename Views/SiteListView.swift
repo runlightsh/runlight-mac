@@ -25,8 +25,8 @@ struct SiteListView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(sites, id: \.key) { entry in
-                            SiteRow(key: entry.key, site: entry.site)
+                        ForEach(Array(sites.enumerated()), id: \.element.key) { index, entry in
+                            SiteRow(key: entry.key, site: entry.site, position: index)
                                 .id(entry.key)
                         }
                     }
@@ -37,7 +37,7 @@ struct SiteListView: View {
                 }
                 .scrollIndicators(.automatic)
                 .frame(height: min(contentHeight, maxHeight))
-                .onChange(of: model.expandedSite) { _, key in
+                .onChange(of: model.openSite) { _, key in
                     guard let key else { return }
                     // Once the detail has opened, bring all of it into view.
                     Task {
@@ -52,7 +52,7 @@ struct SiteListView: View {
     /// Taller with a site open, so its detail fits, but never past the screen.
     private var maxHeight: CGFloat {
         let screen = (NSScreen.main?.visibleFrame.height ?? 800) - 190
-        return min(model.expandedSite == nil ? 420 : 640, screen)
+        return min(model.openSite == nil ? 420 : 640, screen)
     }
 }
 
@@ -144,6 +144,9 @@ private struct SiteRow: View {
     static let height: CGFloat = 46
     let key: SiteKey
     let site: Site
+    /// Where the row sits in the list. A row that moves when the order changes clears its hover
+    /// look, since the pointer it was under never left it.
+    let position: Int
 
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
@@ -151,7 +154,7 @@ private struct SiteRow: View {
     @Namespace private var chart
 
     var body: some View {
-        let expanded = model.expandedSite == key
+        let expanded = model.openSite == key
         VStack(spacing: 0) {
             header(expanded: expanded)
             if expanded {
@@ -172,6 +175,7 @@ private struct SiteRow: View {
                 }
         }
         .padding(.vertical, expanded ? Theme.Space.xs : 0)
+        .onChange(of: position) { hovering = false }
     }
 
     private func header(expanded: Bool) -> some View {
@@ -179,6 +183,8 @@ private struct SiteRow: View {
         let failure = model.failures[key]
         let quiet = model.period == .today && summary.visitors == 0
         let live = model.details[key]?.liveVisitors(at: model.now())
+        // The only site shown stays open; its row isn't a button.
+        let fixed = model.onlySite == key
         return HStack(spacing: Theme.Space.m - 2) {
             SiteIcon(key: key, site: site)
             VStack(alignment: .leading, spacing: 1) {
@@ -239,8 +245,8 @@ private struct SiteRow: View {
         .animation(Theme.Motion.number, value: summary)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText(summary, failure: failure, quiet: quiet, live: live))
-        .accessibilityValue(expanded ? "Expanded" : "Collapsed")
-        .accessibilityAddTraits(.isButton)
+        .accessibilityValue(fixed ? "" : expanded ? "Expanded" : "Collapsed")
+        .accessibilityAddTraits(fixed ? [] : .isButton)
         .accessibilityAction { withAnimation(Theme.Motion.push) { model.toggleExpanded(key) } }
         .accessibilityAction(named: "Open in Runlight") { open() }
     }

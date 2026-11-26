@@ -97,6 +97,27 @@ struct DetailTests {
         #expect(model.expandedSite == nil)
     }
 
+    @Test func aSingleSiteIsAlwaysOpen() async throws {
+        let (_, model, key) = try await connected()
+        #expect(model.openSite == nil)
+        for entry in model.allSites where entry.site.id != key.site {
+            model.setShown(SiteKey(connection: entry.connection.id, site: entry.site.id), false)
+        }
+        #expect(model.onlySite == key)
+        #expect(model.openSite == key)
+        // Clicking it or pressing Escape doesn't fold it away.
+        model.toggleExpanded(key)
+        #expect(model.openSite == key)
+        #expect(!model.collapse())
+        // Live numbers come for it while the popover is up.
+        model.popoverOpened()
+        #expect(model.watchedSite == key)
+
+        // A second site shown: back to folded rows.
+        model.setShown(SiteKey(connection: key.connection, site: "tulvane.com"), true)
+        #expect(model.openSite == nil)
+    }
+
     @Test func escapeFoldsTheSiteBeforeClosing() async throws {
         let (_, model, key) = try await connected()
         #expect(!model.collapse())

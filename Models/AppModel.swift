@@ -177,17 +177,28 @@ final class AppModel {
 
     /// The site whose live numbers should be fetched now: the open one, while the popover is up.
     var watchedSite: SiteKey? {
-        guard popoverVisible, let key = expandedSite, isShown(key) else { return nil }
+        guard popoverVisible, let key = openSite, isShown(key) else { return nil }
         return connections.contains { $0.id == key.connection && $0.sites.contains { $0.id == key.site } } ? key : nil
     }
 
+    /// The only site shown, when there is just one: it stays open, since there's nothing to choose between.
+    var onlySite: SiteKey? {
+        let shown = shownSites
+        guard shown.count == 1, let entry = shown.first else { return nil }
+        return SiteKey(connection: entry.connection.id, site: entry.site.id)
+    }
+
+    /// The site whose detail shows: the only one, or the one clicked open.
+    var openSite: SiteKey? { onlySite ?? expandedSite }
+
     func toggleExpanded(_ key: SiteKey) {
+        guard onlySite == nil else { return }
         expandedSite = expandedSite == key ? nil : key
     }
 
     /// Escape folds an open site away before it closes the popover. Returns whether it did.
     func collapse() -> Bool {
-        guard expandedSite != nil else { return false }
+        guard onlySite == nil, expandedSite != nil else { return false }
         expandedSite = nil
         return true
     }

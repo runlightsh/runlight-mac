@@ -17,6 +17,21 @@ enum AppAppearance: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The next one along, for the popover's button that cycles through them.
+    var next: AppAppearance {
+        let all = Self.allCases
+        return all[(all.firstIndex(of: self)! + 1) % all.count]
+    }
+
+    /// A symbol for each: half a circle filled for following the system.
+    var symbol: String {
+        switch self {
+        case .system: "circle.lefthalf.filled"
+        case .light: "sun.max"
+        case .dark: "moon"
+        }
+    }
+
     var nsAppearance: NSAppearance? {
         switch self {
         case .system: nil

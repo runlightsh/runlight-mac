@@ -68,6 +68,7 @@ struct PopoverView: View {
                 .accessibilityLabel(model.isRefreshing ? "Refreshing" : "Refresh")
                 .keyboardShortcut("r", modifiers: .command)
             }
+            AppearanceButton()
             Button { actions.openSettings(.general) } label: {
                 Image(systemName: "gearshape")
             }
@@ -85,6 +86,25 @@ struct PopoverView: View {
         .padding(.leading, Theme.Space.l)
         .padding(.trailing, Theme.Space.s)
         .frame(height: 38)
+    }
+}
+
+/// Cycles Auto, Light, and Dark without opening Settings; the symbol shows the one in use.
+private struct AppearanceButton: View {
+    @AppStorage(AppAppearance.defaultsKey) private var appearance = AppAppearance.system
+
+    var body: some View {
+        Button {
+            appearance = appearance.next
+            AppAppearance.apply(appearance)
+        } label: {
+            Image(systemName: appearance.symbol)
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 16)
+        }
+        .help("Appearance: \(appearance.title)")
+        .accessibilityLabel("Appearance")
+        .accessibilityValue(appearance.title)
     }
 }
 

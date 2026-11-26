@@ -108,8 +108,14 @@ final class PopoverController: NSObject {
         panel.contentView = hosting
     }
 
+    /// When the popover last closed itself for a click elsewhere.
+    private var closedForOutsideClickAt: Date?
+
     func toggle(from button: NSStatusBarButton) {
-        isShown ? hide() : show(from: button)
+        if isShown { return hide() }
+        // A click on the icon that a mouse down already closed it for: leave it closed.
+        if let closed = closedForOutsideClickAt, Date().timeIntervalSince(closed) < 0.35 { return }
+        show(from: button)
     }
 
     func show(from button: NSStatusBarButton) {
@@ -148,8 +154,12 @@ final class PopoverController: NSObject {
         onHide?()
     }
 
+    private func anchorFrame() -> CGRect? {
+        anchorButton.flatMap { button in button.window.map { $0.convertToScreen(button.convert(button.bounds, to: nil)) } }
+    }
+
     private func frame(for size: CGSize) -> CGRect {
-        let anchor = anchorButton.flatMap { button in button.window.map { $0.convertToScreen(button.convert(button.bounds, to: nil)) } }
+        let anchor = anchorFrame()
         return PanelPlacement.frame(size: size, anchor: anchor, screens: NSScreen.screens.map { ($0.frame, $0.visibleFrame) }, main: NSScreen.main?.visibleFrame)
     }
 
@@ -168,7 +178,13 @@ final class PopoverController: NSObject {
         if UserDefaults.standard.bool(forKey: "KeepPopoverOpen") { return }
         #endif
         outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
-            MainActor.assumeIsolated { self?.hide() }
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                // The menu bar icon's own clicks may arrive here; its mouse up closes the popover.
+                if let anchor = self.anchorFrame(), anchor.insetBy(dx: -2, dy: -2).contains(NSEvent.mouseLocation) { return }
+                self.hide()
+                self.closedForOutsideClickAt = Date()
+            }
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard event.keyCode == 53 else { return event } // Escape
