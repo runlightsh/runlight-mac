@@ -22,7 +22,7 @@ struct DashboardPolicyTests {
         #expect(DashboardPolicy.route(URL(string: "mailto:hi@example.com")!, base: hub) == .elsewhere)
     }
 
-    @Test func dashboardLinksCanOpenOnSettings() {
+    @Test @MainActor func dashboardLinksCanOpenOnSettings() {
         let url = AppModel.dashboardURL(base: URL(string: "https://analytics.joncp.dev")!, site: "thedailypreset.com", period: .today, open: "settings:general")
         #expect(url?.absoluteString == "https://analytics.joncp.dev/?site=thedailypreset.com&period=today&open=settings:general")
     }
