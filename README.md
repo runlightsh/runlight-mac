@@ -7,6 +7,19 @@ that sent the traffic.
 Runlight for Mac talks only to your own Runlight. No account, no cloud, and nothing about you or your
 visitors leaves your Mac.
 
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mac-list-dark.webp">
+    <img src="docs/screenshots/mac-list-light.webp" width="360" alt="The Runlight popover listing five sites with today's visitors, the change against yesterday, and a small chart for each">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mac-detail-dark.webp">
+    <img src="docs/screenshots/mac-detail-light.webp" width="360" alt="One site opened in the popover, with its chart of the day against yesterday, totals, and the pages being read right now">
+  </picture>
+</p>
+
+<sub>The sites shown are made up.</sub>
+
 ## What it does
 
 - **Every site at a glance.** Visitors today for each site, the change against the same time yesterday,
