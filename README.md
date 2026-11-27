@@ -10,11 +10,11 @@ visitors leaves your Mac.
 <p>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mac-list-dark.webp">
-    <img src="docs/screenshots/mac-list-light.webp" width="360" alt="The Runlight popover listing five sites with today's visitors, the change against yesterday, and a small chart for each">
+    <img src="docs/screenshots/mac-list-light.webp" width="360" align="top" alt="The Runlight popover listing five sites with today's visitors, the change against yesterday, and a small chart for each">
   </picture>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mac-detail-dark.webp">
-    <img src="docs/screenshots/mac-detail-light.webp" width="360" alt="One site opened in the popover, with its chart of the day against yesterday, totals, and the pages being read right now">
+    <img src="docs/screenshots/mac-detail-light.webp" width="360" align="top" alt="One site opened in the popover, with its chart of the day against yesterday, totals, and the pages being read right now">
   </picture>
 </p>
 
