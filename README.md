@@ -30,7 +30,13 @@ visitors leaves your Mac.
 2. Open it and drag Runlight to your Applications folder.
 3. Open Runlight. Its icon appears in the menu bar at the top of your screen.
 
-Runlight for Mac needs macOS 14 Sonoma or later.
+Or install it with [Homebrew](https://brew.sh):
+
+```
+brew install --cask runlightsh/tap/runlight
+```
+
+Runlight for Mac needs macOS 14 Sonoma or later. It updates itself either way.
 
 ## Connect your Runlight
 

@@ -111,9 +111,22 @@ git tag "v$VERSION"
 # download link on runlight.sh/mac goes to). Kept out of $ARCHIVES, where generate_appcast would list it.
 cp "$DMG" "$OUT/Runlight.dmg"
 
+# The Homebrew cask, in a checkout of github.com/runlightsh/homebrew-tap next to this repo.
+CASK=../homebrew-tap/Casks/runlight.rb
+if [ -f "$CASK" ]; then
+  step "Updating the Homebrew cask"
+  SHA=$(shasum -a 256 "$DMG" | cut -d' ' -f1)
+  sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$SHA\"/" "$CASK"
+  git -C ../homebrew-tap commit -q -am "Runlight $VERSION"
+  CASK_STEP="git -C ../homebrew-tap push   (after the GitHub release, so the cask's DMG exists)"
+else
+  CASK_STEP="Clone git@github.com:runlightsh/homebrew-tap.git next to this repo, then set version \"$VERSION\" and sha256 \"$(shasum -a 256 "$DMG" | cut -d' ' -f1)\" in Casks/runlight.rb, commit, and push"
+fi
+
 step "Ready. To publish:"
 cat <<NEXT
   git push origin main v$VERSION
   gh release create v$VERSION "$DMG" "$OUT/Runlight.dmg" --repo runlightsh/runlight-mac --title "Runlight for Mac $VERSION" --notes "..."
   cp "$OUT/appcast.xml" ../runlight-website/site/src/root/mac/appcast.xml   (then commit and push the website)
+  $CASK_STEP
 NEXT
