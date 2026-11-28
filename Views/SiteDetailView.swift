@@ -552,7 +552,8 @@ private struct BarList: View {
 
 // MARK: Live
 
-/// "52 on the site now" over the last 30 minutes of pageviews, from a fetch under a minute old.
+/// "52 on the site now": anyone with a pageview, event, or engagement ping in the last five minutes,
+/// from a fetch under 90 seconds old. The bars beside it are pageviews each minute for the last 30.
 private struct LiveCount: View {
     let detail: SiteDetail?
     let now: Date
